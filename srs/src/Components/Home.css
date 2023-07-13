@@ -1,0 +1,43 @@
+.Navone {
+  text-decoration: none;
+  padding-left: 14%;
+  color: black;
+  font-weight: 400;
+}
+.Navone:hover {
+  color: blueviolet;
+  
+}
+.logo {
+  width: 200px;
+  padding-left: 10%;
+  margin-left: 25%;
+}
+.secondimage{
+  display: grid;
+  width: 300px;
+  margin-left: 20%;
+  margin-top: 10%;
+}
+.main {
+  background-color: whitesmoke;
+  height: 140%;
+}
+.head {
+  text-align: center;
+  margin-top: 30%;
+  margin-left: 10%;
+  font-size: 90px;
+  letter-spacing: 20px;
+  font-weight: 500;
+}
+.head1 {
+  text-align: center;
+  word-spacing: 10px;
+  margin-left: 5%;
+}
+.copyright {
+  text-align: center;
+  margin-top: 20%;
+  margin-left: 5%;
+}
