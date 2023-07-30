@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 function Dstudent() {
   const [fname, setFname] = useState("");
@@ -14,6 +15,14 @@ function Dstudent() {
   const [guardianname, setGuardianName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const generateAdmissionID = () => {
+    const random4DigitNumber = Math.floor(1000 + Math.random() * 9000);
+    return  + random4DigitNumber;
+  };
+  useEffect(() => {
+    // Set initial admissionID when the component mounts
+    setAdmissionID(generateAdmissionID());
+  }, []);
   const studentdata = async (e) => {
     e.preventDefault();
     const resetForm = () => {
@@ -44,8 +53,10 @@ function Dstudent() {
       setErrorMessage("Please fill the details.");
       return;
     }
+    const newAdmissionID = generateAdmissionID();
+    setAdmissionID(newAdmissionID);
     try {
-      const response = await axios.post(
+      const studentdetails = await axios.post(
         "http://localhost:4000/studentsdetails",
         {
           fname,
@@ -55,12 +66,11 @@ function Dstudent() {
           roll,
           email,
           studentclass,
-          admissionID,
+          admissionID: newAdmissionID,
           phone,
           guardianname,
         }
       );
-      console.log(response.data);
       setSuccessMessage("Student added successfully!");
       setErrorMessage("");
       resetForm();
@@ -90,7 +100,7 @@ function Dstudent() {
         >
           <div className="row">
             <div className="col-xl-3 col-lg-6 col-12 form-group">
-              <label>First Name *</label>
+              <label> Name *</label>
               <input
                 type="text"
                 placeholder=""
@@ -100,7 +110,7 @@ function Dstudent() {
               />
             </div>
             <div className="col-xl-3 col-lg-6 col-12 form-group">
-              <label>Last Name *</label>
+              <label>Address *</label>
               <input
                 type="text"
                 placeholder=""

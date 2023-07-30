@@ -19,21 +19,23 @@ import Dexam from "./Dexam";
 import Result from "./Result";
 import ArrowDropDownCircleTwoToneIcon from "@mui/icons-material/ArrowDropDownCircleTwoTone";
 import { Link, useNavigate } from "react-router-dom";
+import Studentdetails from "./Studentdetails";
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [showViewAllButton, setShowViewAllButton] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const handleDropdownToggle = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
 
   const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
     if (tabName === "student") {
-      setShowViewAllButton(true);
+      setShowViewAllButton((prevValue) => !prevValue);
     } else {
       setShowViewAllButton(false);
     }
+    setActiveTab(tabName);
+  };
+
+  const dropdownShow = () => {
+    setDropdownOpen((dropdownOpen) => !dropdownOpen);
   };
   const Navigate = useNavigate();
   const handleLogout = () => {
@@ -77,16 +79,42 @@ function Dashboard() {
               >
                 <SchoolIcon className="me-4 schoolicon" />
                 <span>Student</span>
-                <ArrowDropDownCircleTwoToneIcon style={{ marginLeft: "2px" }} />
 
-                <Link
-                  to={"/studentdetails"}
-                  className="nav-link"
-                  style={{ textDecoration: "none", display: "none" }}
-                >
-                  <RemoveRedEyeOutlinedIcon style={{ marginLeft: "20px" }} />
-                  <span style={{ marginLeft: "5px" }}>Student Details</span>
-                </Link>
+                {/* {showViewAllButton && (
+                  <Link
+                    to={"/studentdetails"}
+                    className="nav-link"
+                   
+                  >
+                    <RemoveRedEyeOutlinedIcon style={{ marginLeft: "20px" }} />
+                    <span style={{ marginLeft: "5px" }}>Student Details</span>
+                  </Link>
+                )} */}
+                <span>
+                  <Link>
+                    <ArrowDropDownCircleTwoToneIcon
+                      style={{ marginLeft: "2px", color: "white" }}
+                      onClick={() => dropdownShow(!dropdownOpen)}
+                    />
+                  </Link>
+                </span>
+              </button>
+
+              <button
+                style={{
+                  textDecoration: "none",
+                  border: "10px solid smoke white",
+                  backgroundColor: "black",
+                  padding: "3px",
+                  marginLeft: "18%",
+                }}
+                className={`${
+                  dropdownOpen ? "studentDetShop " : "studentDet"
+                } studentdetails"`}
+                onClick={() => handleTabClick("studentdetails")}
+              >
+                <ClassIcon className="me-4 classicon " />
+                <span className="student">Student Details</span>
               </button>
 
               <button
@@ -142,6 +170,7 @@ function Dashboard() {
             {activeTab === "subject" && <Dsubject />}
             {activeTab === "exam" && <Dexam />}
             {activeTab === "result" && <Result />}
+            {activeTab === "studentdetails" && <Studentdetails />}
           </div>
         </div>
       </div>

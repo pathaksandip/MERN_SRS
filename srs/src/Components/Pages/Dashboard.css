@@ -1,6 +1,19 @@
 .sidebar {
   background-color: #152259;
 }
+.studentDet {
+  display: none;
+}
+.studentDetShop {
+  display: block;
+}
+/* .studentdetails {
+  text-decoration: none;
+  border: 10px solid whitesmoke;
+  background-color: black;
+  padding: 3px;
+  margin-left: 18%; */
+
 ​ span {
   font-family: Georgia, "Times New Roman", Times, serif;
   text-align: center;
@@ -28,7 +41,7 @@ button {
   margin-right: 4%;
 }
 .btn3 {
- margin: 4%;
+  margin: 4%;
 }
 .btn4 {
   margin-left: 4%;
@@ -66,9 +79,9 @@ button {
   margin-left: 8%;
   color: antiquewhite;
 }
-.class{
-   padding-right: 10%;
+.class {
+  padding-right: 10%;
 }
-.schoolicon{
+.schoolicon {
   margin-left: 10%;
 }

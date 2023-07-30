@@ -55,7 +55,6 @@ function Ateacher() {
           tpassword: teacher.tpassword,
         }
       );
-      console.log(response);
       setEditingTeacherId(null);
       const updatedTeacherList = teacherList.map((teacher) =>
         teacher._id === teacherId ? response.data : teacher
@@ -94,7 +93,6 @@ function Ateacher() {
         tdob,
         tpassword,
       });
-      console.log(response);
       //clearing the input taken after response
       setTName("");
       setTEmail("");

@@ -47,7 +47,7 @@ app.post("/loginadmin", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//adminregister
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -59,7 +59,7 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//adminlogin
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -84,7 +84,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//teacherschema
 const TeacherSchema = new mongoose.Schema({
   tName: String,
   temail: String,
@@ -96,10 +96,10 @@ const TeacherSchema = new mongoose.Schema({
   tdob: Date,
   tpassword: String,
 });
-
+//teacherdetails
 const Teacher = mongoose.model("teacherdetail", TeacherSchema);
 
-app.post("/teacherdetail", async (req, res) => {
+app.post("/teacherdetails", async (req, res) => {
   try {
     const {
       tName,
@@ -130,7 +130,7 @@ app.post("/teacherdetail", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//loginiteacherfordashboard
 app.post("/login/teacher", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -155,18 +155,17 @@ app.post("/login/teacher", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//getteacherdetails
 app.get("/getteacherdetail", async (req, res) => {
   try {
     const Teachers = await Teacher.find();
     res.status(200).json(Teachers);
-    console.log(Teachers);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//deleteteacher
 app.delete("/removeteacher/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -177,7 +176,7 @@ app.delete("/removeteacher/:id", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//editteacher
 app.put("/updateteacher/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -214,7 +213,7 @@ app.put("/updateteacher/:id", async (req, res) => {
     res.status(500).json({ message: "Failed to update teacher details" });
   }
 });
-
+//deatails
 const Student = mongoose.model("studentdetails", StudentSchema);
 
 app.post("/studentsdetails", async (req, res) => {
@@ -244,14 +243,33 @@ app.post("/studentsdetails", async (req, res) => {
       phone,
       guardianname,
     });
-    console.log(response);
     res.status(200).json({ message: "Student created successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "An error occurred" });
   }
 });
-
+//getstudentdata
+app.get("/studentsdetails", async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+//deletestudent
+app.delete("/removestudent/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Student.findByIdAndDelete(id);
+    res.status(200).json({ message: "Student removed successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
 // Start the server
 app.listen(4000, () => {
   console.log("Server started on port 4000");
