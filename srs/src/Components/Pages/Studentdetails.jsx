@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 function Studentdetails() {
   const [students, setStudents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [classSearchQuery, setClassSearchQuery] = useState("");
+  const [rollSearchQuery, setRollSearchQuery] = useState("");
   useEffect(() => {
     fetchStudentData();
   }, []);
@@ -44,6 +47,8 @@ function Studentdetails() {
                 type="text"
                 placeholder="Search by Roll ..."
                 className="form-control"
+                value={rollSearchQuery}
+                onChange={(e) => setRollSearchQuery(e.target.value)}
               />
             </div>
             <div className="col-4-xxxl col-xl-4 col-lg-3 col-12 form-group">
@@ -51,6 +56,8 @@ function Studentdetails() {
                 type="text"
                 placeholder="Search by  Name ..."
                 className="form-control"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <div className="col-4-xxxl col-xl-3 col-lg-3 col-12 form-group">
@@ -58,12 +65,9 @@ function Studentdetails() {
                 type="text"
                 placeholder="Search by class ..."
                 className="form-control"
+                value={classSearchQuery}
+                onChange={(e) => setClassSearchQuery(e.target.value)}
               />
-            </div>
-            <div className="col-1-xxxl col-xl-2 col-lg-3 col-12 form-group mt-1">
-              <button type="submit" className="fw-btn-fill btn-gradient-yellow">
-                SEARCH
-              </button>
             </div>
           </div>
         </form>
@@ -85,41 +89,55 @@ function Studentdetails() {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student) => (
-                  <tr key={student._id}>
-                    <td>{student.fname} </td>
-                    <td>{student.lname}</td>
-                    <td>{student.gender}</td>
-                    <td> {DateConverter(student.sdob)}</td>
-                    <td>{student.roll}</td>
-                    <td>{student.email}</td>
-                    <td>{student.studentclass}</td>
-                    <td>{student.admissionID}</td>
-                    <td>{student.phone}</td>
-                    <td>{student.guardianname}</td>
-                    <td>
-                      <button
-                        className="btn btn-danger"
-                        style={{
-                          backgroundColor: "Red",
-                          color: "whitesmoke",
-                          margin: "3%",
-                        }}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to remove this teacher?"
-                            )
-                          ) {
-                            removestudent(student._id);
-                          }
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {students
+                  .filter(
+                    (student) =>
+                      student.fname
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) &&
+                      student.studentclass
+                        .toLowerCase()
+                        .includes(classSearchQuery.toLowerCase()) &&
+                      student.roll
+                        .toString()
+                        .toLowerCase()
+                        .includes(rollSearchQuery.toLowerCase())
+                  )
+                  .map((student) => (
+                    <tr key={student._id}>
+                      <td>{student.fname} </td>
+                      <td>{student.lname}</td>
+                      <td>{student.gender}</td>
+                      <td> {DateConverter(student.sdob)}</td>
+                      <td>{student.roll}</td>
+                      <td>{student.email}</td>
+                      <td>{student.studentclass}</td>
+                      <td>{student.admissionID}</td>
+                      <td>{student.phone}</td>
+                      <td>{student.guardianname}</td>
+                      <td>
+                        <button
+                          className="btn btn-danger"
+                          style={{
+                            backgroundColor: "Red",
+                            color: "whitesmoke",
+                            margin: "3%",
+                          }}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to remove this teacher?"
+                              )
+                            ) {
+                              removestudent(student._id);
+                            }
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
