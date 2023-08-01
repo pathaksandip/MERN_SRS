@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 
 function Dstudent() {
   const [fname, setFname] = useState("");
@@ -17,7 +16,7 @@ function Dstudent() {
   const [errorMessage, setErrorMessage] = useState("");
   const generateAdmissionID = () => {
     const random4DigitNumber = Math.floor(1000 + Math.random() * 9000);
-    return  + random4DigitNumber;
+    return +random4DigitNumber;
   };
   useEffect(() => {
     // Set initial admissionID when the component mounts
@@ -127,9 +126,9 @@ function Dstudent() {
                 onChange={(e) => setGender(e.target.value)}
               >
                 <option value="">Please Select Gender *</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="others">Others</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Others</option>
               </select>
             </div>
             <div className="col-xl-3 col-lg-6 col-12 form-group">
@@ -147,7 +146,7 @@ function Dstudent() {
             <div className="col-xl-3 col-lg-6 col-12 form-group">
               <label>Roll</label>
               <input
-                type="text"
+                type="Number"
                 placeholder=""
                 className="form-control"
                 value={roll}

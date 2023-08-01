@@ -99,7 +99,7 @@ const TeacherSchema = new mongoose.Schema({
 //teacherdetails
 const Teacher = mongoose.model("teacherdetail", TeacherSchema);
 
-app.post("/teacherdetails", async (req, res) => {
+app.post("/teacherdetail", async (req, res) => {
   try {
     const {
       tName,
@@ -270,6 +270,49 @@ app.delete("/removestudent/:id", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
+//updatestudent
+app.put("/updatestudent/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      fname,
+      lname,
+      gender,
+      sdob,
+      roll,
+      email,
+      studentclass,
+      admissionID,
+      phone,
+      guardianname,
+    } = req.body;
+    const updatedStudent = await Student.findByIdAndUpdate(
+      id,
+      {
+        fname,
+        lname,
+        gender,
+        sdob,
+        roll,
+        email,
+        studentclass,
+        admissionID,
+        phone,
+        guardianname,
+      },
+      { new: true }
+    );
+    if (updatedStudent) {
+      res.status(200).json(updatedStudent);
+    } else {
+      res.status(404).json({ message: "Student not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Start the server
 app.listen(4000, () => {
   console.log("Server started on port 4000");
