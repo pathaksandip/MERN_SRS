@@ -14,6 +14,7 @@ function Ateacher() {
   const [tdob, settdob] = useState("");
   const [teacherList, setTeacherList] = useState([]);
   const [editingTeacherId, setEditingTeacherId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   function DateConverter(dateValue) {
     var dateString = dateValue;
@@ -103,6 +104,17 @@ function Ateacher() {
       settsubject("");
       settdob("");
       settpassword("");
+      // Show success message
+      const updatedTeacherResponse = await axios.get(
+        "http://localhost:4000/getteacherdetail"
+      );
+      setTeacherList(updatedTeacherResponse.data);
+
+      // Show success message
+      setSuccessMessage("Teacher details added successfully!");
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
       console.log(error);
     }
@@ -238,6 +250,15 @@ function Ateacher() {
               >
                 Submit
               </button>
+              {successMessage && (
+                <div
+                  className="alert alert-success "
+                  role="alert"
+                  style={{ marginLeft: "30%", color: "green" }}
+                >
+                  {successMessage}
+                </div>
+              )}
             </form>
             <div className="container mt-5">
               <h1>Teacher User List</h1>
@@ -406,7 +427,7 @@ function Ateacher() {
                               style={{
                                 backgroundColor: "Red",
                                 color: "whitesmoke",
-                                margin: "3%",
+                                marginLeft: "2px",
                               }}
                               onClick={() => {
                                 if (

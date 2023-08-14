@@ -18,6 +18,7 @@ function Dstudent() {
     const random4DigitNumber = Math.floor(1000 + Math.random() * 9000);
     return +random4DigitNumber;
   };
+  const [classOptions, setClassOptions] = useState([]);
   useEffect(() => {
     // Set initial admissionID when the component mounts
     setAdmissionID(generateAdmissionID());
@@ -81,7 +82,21 @@ function Dstudent() {
       }
     }
   };
-
+  useEffect(() => {
+    async function fetchClassDetails() {
+      try {
+        const response = await axios.get("http://localhost:4000/classdetail");
+        const classDetails = response.data;
+        const classNames = classDetails.map(
+          (classDetail) => classDetail.classNameS
+        );
+        setClassOptions(classNames);
+      } catch (error) {
+        console.error("Error fetching class details", error.message);
+      }
+    }
+    fetchClassDetails();
+  }, []);
   return (
     <div>
       <div className="dashboard-content-one">
@@ -171,7 +186,12 @@ function Dstudent() {
                 onChange={(e) => setStudentClass(e.target.value)}
               >
                 <option value="">Please Select Class *</option>
-                <option value="Play">Play</option>
+                {classOptions.map((className, index) => (
+                  <option key={index} value={className}>
+                    {className}
+                  </option>
+                ))}
+                {/* <option value="Play">Play</option>
                 <option value="Nursery">Nursery</option>
                 <option value="One">One</option>
                 <option value="Two">Two</option>
@@ -182,7 +202,7 @@ function Dstudent() {
                 <option value="Seven">seven</option>
                 <option value="Eight">Eight</option>
                 <option value="Nine">Nine</option>
-                <option value="Ten">Ten</option>
+                <option value="Ten">Ten</option> */}
               </select>
             </div>
             <div className="col-xl-3 col-lg-6 col-12 form-group">

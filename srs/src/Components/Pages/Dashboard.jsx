@@ -78,17 +78,6 @@ function Dashboard() {
               >
                 <SchoolIcon className="me-4 schoolicon" />
                 <span>Student</span>
-
-                {/* {showViewAllButton && (
-                  <Link
-                    to={"/studentdetails"}
-                    className="nav-link"
-                   
-                  >
-                    <RemoveRedEyeOutlinedIcon style={{ marginLeft: "20px" }} />
-                    <span style={{ marginLeft: "5px" }}>Student Details</span>
-                  </Link>
-                )} */}
                 <span>
                   <Link>
                     <ArrowDropDownCircleTwoToneIcon

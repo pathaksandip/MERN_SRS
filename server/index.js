@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const StudentSchema = require("./Schema/studentschema");
+const ClassSchema = require("./Schema/studentclassschema");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Add this middleware to parse JSON request body
@@ -123,7 +124,6 @@ app.post("/teacherdetail", async (req, res) => {
       tdob,
       tpassword,
     });
-    console.log(response);
     res.status(200).json({ message: "Teacher created successfully" });
   } catch (error) {
     console.log(error);
@@ -310,6 +310,44 @@ app.put("/updatestudent/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+//forstudent'sclass
+const StudentClassDetails = mongoose.model("studentclassdetails", ClassSchema);
+//postclassdetails
+app.post("/classdetail", async (req, res) => {
+  try {
+    const { classNameS, classNameNumeric } = req.body;
+    const response = await StudentClassDetails.create({
+      classNameS,
+      classNameNumeric,
+    });
+    res.status(200).json({ message: "Class created successfully" });
+  } catch (error) {
+    if (error.code === 11000) {
+      // Duplicate key error (classNameS is not unique)
+      res.status(400).json({ message: "Class name already exists" });
+    } else {
+      console.log(error);
+      res.status(500).json({ message: "An error occurred" });
+    }
+  }
+});
+
+//getclassdetails
+app.get("/classdetail", async (req, res) => {
+  try {
+    const classDetails = await StudentClassDetails.find();
+
+    if (!classDetails) {
+      return res.status(404).json({ message: "Class details not found" });
+    }
+
+    res.status(200).json(classDetails);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
   }
 });
 

@@ -18,6 +18,8 @@ function Studentdetails() {
   const [updatedGuardianName, setUpdatedGuardianName] = useState("");
   const [updatedGuardianContact, setUpdatedGuardianContact] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [classOptions, setClassOptions] = useState([]);
+
 
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -67,7 +69,21 @@ function Studentdetails() {
     setUpdatedGuardianContact(student.phone);
     setUpdatedStudent(student);
   };
-
+  useEffect(() => {
+    async function fetchClassDetails() {
+      try {
+        const response = await axios.get("http://localhost:4000/classdetail");
+        const classDetails = response.data;
+        const classNames = classDetails.map(
+          (classDetail) => classDetail.classNameS
+        );
+        setClassOptions(classNames);
+      } catch (error) {
+        console.error("Error fetching class details", error.message);
+      }
+    }
+    fetchClassDetails();
+  }, []);
   const handleUpdateStudent = async () => {
     try {
       const updatedData = {
@@ -249,7 +265,12 @@ function Studentdetails() {
                   value={updatedClass}
                   onChange={(e) => setUpdatedClass(e.target.value)}
                 >
-                  <option value="Play">Play</option>
+                     {classOptions.map((className, index) => (
+                  <option key={index} value={className}>
+                    {className}
+                  </option>
+                ))}
+                  {/* <option value="Play">Play</option>
                   <option value="Nursery">Nursery</option>
                   <option value="One">One</option>
                   <option value="Two">Two</option>
@@ -260,7 +281,7 @@ function Studentdetails() {
                   <option value="Seven">Seven</option>
                   <option value="Eight">Eight</option>
                   <option value="Nine">Nine</option>
-                  <option value="Ten">Ten</option>
+                  <option value="Ten">Ten</option> */}
                 </Form.Control>
               </Form.Group>
             </Form.Group>
