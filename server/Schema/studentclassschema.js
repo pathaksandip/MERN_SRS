@@ -6,5 +6,6 @@ const ClassSchema = new mongoose.Schema({
   },
   classNameNumeric: Number,
 });
-ClassSchema.index({ classNameS: 1 }, { unique: true });
-module.exports = ClassSchema;
+const StudentClassDetails = mongoose.model("studentclassdetails", ClassSchema);
+
+module.exports = StudentClassDetails;

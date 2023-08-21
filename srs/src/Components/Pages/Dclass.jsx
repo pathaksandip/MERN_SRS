@@ -5,7 +5,29 @@ function Dclass() {
   const [classNameS, setClassName] = useState("");
   const [classNameNumeric, setClassNameNumeric] = useState("");
   const [classOptions, setClassOptions] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [messageVisible, setMessageVisible] = useState(false);
+  const fetchClassDetails = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/classdetail");
+      setClassOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching class details", error.message);
+    }
+  };
 
+  useEffect(() => {
+    if (successMessage || errorMessage) {
+      setMessageVisible(true);
+      setTimeout(() => {
+        setSuccessMessage("");
+        setErrorMessage("");
+        setMessageVisible(false);
+      }, 1000); // Clear message after 1 seconds
+    }
+    fetchClassDetails(); // Initial fetching of class details
+  }, [successMessage, errorMessage]);
   const ClassDetail = async (e) => {
     e.preventDefault();
     try {
@@ -13,27 +35,41 @@ function Dclass() {
         classNameS,
         classNameNumeric,
       });
+      await fetchClassDetails();
       // Handle success here
       console.log("Class created successfully");
       // Clear the input fields after success
+      setSuccessMessage("Class created successfully");
       setClassName("");
       setClassNameNumeric("");
+      setErrorMessage("");
     } catch (error) {
       // Handle error here
       console.error("An error occurred:", error.message);
+      setErrorMessage("An error occurred: " + error.message);
+      setSuccessMessage("");
     }
   };
-  useEffect(() => {
-    async function fetchClassDetails() {
-      try {
-        const response = await axios.get("http://localhost:4000/classdetail");
-        setClassOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching class details", error.message);
-      }
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:4000/classdetail/${id}`);
+
+      // Update the classOptions state after successful deletion
+      setClassOptions(
+        classOptions.filter((classDetail) => classDetail._id !== id)
+      );
+
+      // Set success message
+      setSuccessMessage("Class deleted successfully");
+      setErrorMessage("");
+    } catch (error) {
+      // Handle error
+      setErrorMessage("An error occurred while deleting: " + error.message);
+      setSuccessMessage("");
     }
-    fetchClassDetails();
-  }, []);
+  };
+
   return (
     <>
       <div>
@@ -83,16 +119,33 @@ function Dclass() {
               </button>
             </div>
           </div>
+          {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+          {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
         </form>
         <div className="table-responsive">
-          <table className="table display data-table text-nowrap mt-5">
-            <thead>
+          <table className="table table-bordered table-striped mt-5">
+            <thead className="thead-dark">
               <tr>
                 <th> ClassName </th>
                 <th> ClassName Numeric </th>
               </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+              {classOptions.map((classDetail, index) => (
+                <tr key={index}>
+                  <td>{classDetail.classNameS}</td>
+                  <td>{classDetail.classNameNumeric}</td>
+                  <td>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDelete(classDetail._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>

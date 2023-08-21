@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Pages/Ateacher.css";
 import axios from "axios";
+import { Container, Table, Button, Modal, Form } from "react-bootstrap";
 
 function Ateacher() {
   const [tName, setTName] = useState("");
@@ -15,6 +16,12 @@ function Ateacher() {
   const [teacherList, setTeacherList] = useState([]);
   const [editingTeacherId, setEditingTeacherId] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [SubjectDetail, setSubjectDetail] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
+  const [editingTeacher, setEditingTeacher] = useState({});
+  const [modalTGender, setModalTGender] = useState("");
 
   function DateConverter(dateValue) {
     var dateString = dateValue;
@@ -32,11 +39,30 @@ function Ateacher() {
           "http://localhost:4000/getteacherdetail"
         );
         setTeacherList(response.data);
+        if (editingTeacher.tgender) {
+          setModalTGender(editingTeacher.tgender);
+        }
       } catch (error) {
         console.log(error);
       }
     };
     getTeacherDetails();
+  }, []);
+  //getsubjectdetails
+  useEffect(() => {
+    async function fetchSubjectdetails() {
+      try {
+        const response = await axios.get("http://localhost:4000/subjectdetail");
+        const subjectData = response.data;
+        const subjectNames = subjectData.map(
+          (SubjectDetail) => SubjectDetail.SubjectName
+        );
+        setSubjectDetail(subjectNames);
+      } catch (error) {
+        console.error("Error fetching subject details", error.message);
+      }
+    }
+    fetchSubjectdetails();
   }, []);
 
   const editFormHandler = async (teacherId) => {
@@ -64,6 +90,33 @@ function Ateacher() {
     } catch (error) {
       console.log(error);
     }
+  };
+  const handleUpdateTeacher = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/updateteacher/${editingTeacher._id}`,
+        {
+          ...editingTeacher,
+          tpassword: modalTGender,
+          tdob: DateConverter(editingTeacher.tdob),
+        }
+      );
+
+      const updatedTeacherList = teacherList.map((teacher) =>
+        teacher._id === editingTeacher._id ? response.data : teacher
+      );
+
+      setTeacherList(updatedTeacherList);
+      setEditingTeacher({}); // Clear the editingTeacher state
+      handleCloseModal(); // Close the modal
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const updateTeacher = (teacher) => {
+    setEditingTeacher(teacher);
+    settdob(DateConverter(editingTeacher.tdob));
+    handleShowModal();
   };
 
   const Teacherdetail = async (e) => {
@@ -205,9 +258,9 @@ function Ateacher() {
                   <option selected value="">
                     Gender
                   </option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="other">Others</option>
                 </select>
               </div>
               <div className="form-group phone">
@@ -233,15 +286,20 @@ function Ateacher() {
                 />
               </div>
               <div className="form-group address1">
-                <label htmlFor="subject">Subject:</label>
-                <input
-                  type="text"
+                <label>Subject:</label>
+                <select
                   value={tsubject}
                   onChange={(e) => settsubject(e.target.value)}
                   className="form-control"
                   id="subject"
-                  placeholder="Enter subject"
-                />
+                >
+                  <option value="">Please Select Subject *</option>
+                  {SubjectDetail.map((subject, index) => (
+                    <option key={index} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
               </div>
               <button
                 onClick={Teacherdetail}
@@ -260,198 +318,253 @@ function Ateacher() {
                 </div>
               )}
             </form>
-            <div className="container mt-5">
+            <Container className="mt-5">
               <h1>Teacher User List</h1>
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Gender</th>
-                    <th>Username</th>
-                    <th>subject</th>
-                    <th>dob</th>
-                    <th>password</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teacherList.map((teacher) => (
-                    <tr key={teacher._id}>
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <input
-                            type="text"
-                            value={teacher.tName}
-                            size={tName.length > 10 ? tName.length : 10}
-                            onChange={(e) =>
-                              setTeacherList(
-                                teacherList.map((t) =>
-                                  t._id === teacher._id
-                                    ? { ...t, tName: e.target.value }
-                                    : t
-                                )
-                              )
-                            }
-                          />
-                        ) : (
-                          teacher.tName
-                        )}
-                      </td>
-                      <td>{teacher.temail}</td>
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <input
-                            type="text"
-                            size={tphone.length > 10 ? tphone.length : 10}
-                            value={teacher.tphone}
-                            onChange={(e) =>
-                              setTeacherList(
-                                teacherList.map((t) =>
-                                  t._id === teacher._id
-                                    ? { ...t, tphone: e.target.value }
-                                    : t
-                                )
-                              )
-                            }
-                          />
-                        ) : (
-                          teacher.tphone
-                        )}
-                      </td>
-                      <td>{teacher.taddress}</td>
-                      <td>{teacher.tgender}</td>
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <input
-                            type="text"
-                            value={teacher.tusername}
-                            size={tusername.length > 10 ? tusername.length : 10}
-                            onChange={(e) =>
-                              setTeacherList(
-                                teacherList.map((t) =>
-                                  t._id === teacher._id
-                                    ? { ...t, tusername: e.target.value }
-                                    : t
-                                )
-                              )
-                            }
-                          />
-                        ) : (
-                          teacher.tusername
-                        )}
-                      </td>
-                      <td>{teacher.tsubject}</td>
-
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <input
-                            type="date"
-                            value={teacher.tdob}
-                            size={tdob.length > 5 ? tdob.length : 5}
-                            onChange={(e) =>
-                              setTeacherList(
-                                teacherList.map((t) =>
-                                  t._id === teacher._id
-                                    ? { ...t, tdob: e.target.value }
-                                    : t
-                                )
-                              )
-                            }
-                          />
-                        ) : (
-                          DateConverter(teacher.tdob)
-                        )}
-                      </td>
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <input
-                            type="text"
-                            value={teacher.tpassword}
-                            size={tpassword.length > 10 ? tpassword.length : 10}
-                            onChange={(e) =>
-                              setTeacherList(
-                                teacherList.map((t) =>
-                                  t._id === teacher._id
-                                    ? { ...t, tpassword: e.target.value }
-                                    : t
-                                )
-                              )
-                            }
-                          />
-                        ) : (
-                          teacher.tpassword
-                        )}
-                      </td>
-                      <td>
-                        {editingTeacherId === teacher._id ? (
-                          <>
-                            <button
-                              className="btn btn-primary"
-                              style={{
-                                backgroundColor: "blue",
-                                color: "whitesmoke",
-                                margin: "3px",
-                              }}
-                              onClick={() => editFormHandler(teacher._id)}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-danger"
-                              style={{
-                                backgroundColor: "Red",
-                                color: "whitesmoke",
-                                margin: "3%",
-                              }}
-                              onClick={() => setEditingTeacherId(null)}
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              className="btn btn-primary"
-                              style={{
-                                backgroundColor: "blue",
-                                color: "whitesmoke",
-                              }}
-                              onClick={() => setEditingTeacherId(teacher._id)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-danger"
-                              style={{
-                                backgroundColor: "Red",
-                                color: "whitesmoke",
-                                marginLeft: "2px",
-                              }}
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to remove this teacher?"
-                                  )
-                                ) {
-                                  removeTeacher(teacher._id);
-                                }
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </>
-                        )}
-                      </td>
+              <div className="table-responsive">
+                <Table striped responsive>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Address</th>
+                      <th>Gender</th>
+                      <th>Username</th>
+                      <th>Subject</th>
+                      <th>Date of Birth</th>
+                      <th>Password</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {teacherList.map((teacher) => (
+                      <tr key={teacher._id}>
+                        <td>{teacher.tName}</td>
+                        <td>{teacher.temail}</td>
+                        <td>{teacher.tphone}</td>
+                        <td>{teacher.taddress}</td>
+                        <td>{teacher.tgender}</td>
+                        <td>{teacher.tusername}</td>
+                        <td>{teacher.tsubject}</td>
+                        <td>{DateConverter(teacher.tdob)}</td>
+                        <td>{teacher.tpassword}</td>
+                        <td>
+                          <div className="action-buttons">
+                            {editingTeacherId === teacher._id ? (
+                              <>
+                                <Button
+                                  variant="primary"
+                                  style={{
+                                    backgroundColor: "blue",
+                                    color: "whitesmoke",
+                                    margin: "3px",
+                                  }}
+                                  onClick={() => editFormHandler(teacher._id)}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  style={{
+                                    backgroundColor: "red",
+                                    color: "whitesmoke",
+                                    margin: "3%",
+                                  }}
+                                  onClick={() => setEditingTeacherId(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="outline-success"
+                                  style={{ marginRight: "5px" }}
+                                  onClick={() => updateTeacher(teacher)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  style={{
+                                    backgroundColor: "red",
+                                    color: "whitesmoke",
+                                    marginLeft: "2px",
+                                  }}
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Are you sure you want to remove this teacher?"
+                                      )
+                                    ) {
+                                      removeTeacher(teacher._id);
+                                    }
+                                  }}
+                                >
+                                  Remove
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </Container>
           </div>
         </div>
       </div>
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Teacher Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Name"
+                value={editingTeacher.tName || ""}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tName: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formName">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Name"
+                value={editingTeacher.temail || ""}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    temail: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formName">
+              <Form.Label>Phone Number</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Name"
+                value={editingTeacher.tphone || ""}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tphone: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formName">
+              <Form.Label>Address</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder=""
+                value={editingTeacher.taddress || ""}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    taddress: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formGender">
+              <Form.Label>Gender</Form.Label>
+              <Form.Control
+                as="select"
+                value={editingTeacher.tgender} // Use the teacher's gender value here
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tgender: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Others</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="formName">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder=""
+                value={editingTeacher.tusername || ""}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tusername: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Control
+              type="Date"
+              value={editingTeacher.tdob || ""} // Use the teacher's dob value here
+              onChange={(e) =>
+                setEditingTeacher({
+                  ...editingTeacher,
+                  tdob: e.target.value,
+                })
+              }
+            />
+
+            <Form.Group controlId="formName">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder=""
+                value={editingTeacher.tpassword}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tpassword: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formName">
+              <Form.Label>Subject</Form.Label>
+              <Form.Control
+                as="select"
+                value={editingTeacher.tpassword}
+                onChange={(e) =>
+                  setEditingTeacher({
+                    ...editingTeacher,
+                    tpassword: e.target.value,
+                  })
+                }
+              >
+                {SubjectDetail.map((className, index) => (
+                  <option key={index} value={className}>
+                    {className}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleUpdateTeacher}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

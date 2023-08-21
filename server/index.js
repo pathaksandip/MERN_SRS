@@ -5,8 +5,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const StudentSchema = require("./Schema/studentschema");
-const ClassSchema = require("./Schema/studentclassschema");
-
+const StudentClassDetails = require("./Schema/studentclassschema");
+const SubjectDetails = require("./Schema/subjectdetailschema");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Add this middleware to parse JSON request body
 
@@ -314,7 +314,6 @@ app.put("/updatestudent/:id", async (req, res) => {
 });
 
 //forstudent'sclass
-const StudentClassDetails = mongoose.model("studentclassdetails", ClassSchema);
 //postclassdetails
 app.post("/classdetail", async (req, res) => {
   try {
@@ -350,7 +349,64 @@ app.get("/classdetail", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
+//deleteclass
+app.delete("/classdetail/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await StudentClassDetails.findByIdAndDelete(id);
+    res.status(200).json({ message: "Class deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+//postsubjectdetails
+app.post("/subjectdetail", async (req, res) => {
+  try {
+    const { SubjectName, SubjectCode, SubjectCreditHour } = req.body;
+    const response = await SubjectDetails.create({
+      SubjectName,
+      SubjectCode,
+      SubjectCreditHour,
+    });
+    res.status(200).json({ message: "Subject created successfully" });
+  } catch (error) {
+    if (error.code === 11000) {
+      // Duplicate key error (classNameS is not unique)
+      res.status(400).json({ message: "Subjectname already exists" });
+    } else {
+      console.log(error);
+      res.status(500).json({ message: "An error occurred" });
+    }
+  }
+});
+//getsubjectdetails
+app.get("/subjectdetail", async (req, res) => {
+  try {
+    const SubjectD = await SubjectDetails.find();
 
+    if (!SubjectD) {
+      return res.status(404).json({ message: "Subject details not found" });
+    }
+
+    res.status(200).json(SubjectD);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+//deletesubjectdetails
+
+app.delete("/subjectdetail/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await SubjectDetails.findByIdAndDelete(id);
+    res.status(200).json({ message: "Subjectdetail deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occured" });
+  }
+});
 // Start the server
 app.listen(4000, () => {
   console.log("Server started on port 4000");
