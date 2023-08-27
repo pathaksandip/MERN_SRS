@@ -20,6 +20,9 @@ import Dexam from "./Components/Pages/Dexam";
 import Result from "./Components/Pages/Result";
 import Dteacher from "./Components/Dteacher";
 import Studentdetails from "./Components/Pages/Studentdetails";
+import Addexam from "./Components/Pages/ExamDeails/Addexam";
+import Examlist from "./Components/Pages/ExamDeails/Examlist";
+import AddexamDetails from "./Components/Pages/AddexamDetails";
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.withCredentials = true;
 function App() {
@@ -42,6 +45,9 @@ function App() {
           <Route path="/dresult" element={<Result />} />
           <Route path="/dteacher" element={<Dteacher />} />
           <Route path="/studentdetails" element={<Studentdetails />} />
+          <Route path="/addexam" element={<Addexam />} />
+          <Route path="/examlist" element={<Examlist />} />
+          <Route path="/addexamdetails" element={<AddexamDetails />} />
         </Routes>
       </Router>
     </>
