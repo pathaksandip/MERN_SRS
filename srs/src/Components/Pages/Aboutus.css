@@ -1,0 +1,65 @@
+h2 {
+  color: whitesmoke;
+  text-align: center;
+}
+#logo {
+  width: 45%;
+  height: 90%;
+  margin-top: 10%;
+  margin-left: 20%;
+}
+#aboutusmain {
+  background-color: rgb(11, 20, 64);
+  width: 600px;
+  padding-left: 30%;
+  margin-top: 15%;
+  color: whitesmoke;
+}
+.bijay {
+  text-align: center;
+  font-size: 20px;
+}
+.milan {
+  text-align: center;
+  font-size: 20px;
+}
+.sandip {
+  text-align: center;
+  font-size: 20px;
+}
+.suman {
+  text-align: center;
+  font-size: 20px;
+}
+#footer {
+  background: rgb(11, 20, 64);
+}
+.card {
+  margin-top: 10%;
+}
+.logo2 {
+  width: 35%;
+  height: 70%;
+  margin-left: 5%;
+}
+.srs {
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10%;
+}
+.news {
+  display: flex;
+}
+.team {
+  text-align: center;
+}
+#design {
+  margin-top: 15%;
+}
+h5 {
+  font-size: 25px;
+}
+#para {
+  font-size: 20px;
+}

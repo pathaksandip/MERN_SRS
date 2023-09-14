@@ -9,7 +9,7 @@ const StudentClassDetails = require("./Schema/studentclassschema");
 const SubjectDetails = require("./Schema/subjectdetailschema");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Add this middleware to parse JSON request body
-
+const Examdetails = require("./Schema/Examdetails");
 // Enable CORS
 app.use(
   cors({
@@ -405,6 +405,29 @@ app.delete("/subjectdetail/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "An error occured" });
+  }
+});
+//examdetails
+app.post("/api/addexam", async (req, res) => {
+  try {
+    const { examName, academicYear } = req.body;
+    const newExam = new Examdetails({
+      examName,
+      academicYear,
+    });
+    const savedExam = await newExam.save();
+    res.status(201).json(savedExam);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+//getexam
+app.get("/api/exams", async (req, res) => {
+  try {
+    const exams = await Examdetails.find();
+    res.status(200).json(exams);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
   }
 });
 // Start the server
