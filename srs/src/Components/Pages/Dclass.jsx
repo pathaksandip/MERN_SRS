@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import Assignsubject from "./Assignsubject";
 function Dclass() {
   const [classNameS, setClassName] = useState("");
   const [classNameNumeric, setClassNameNumeric] = useState("");
@@ -8,6 +8,20 @@ function Dclass() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [messageVisible, setMessageVisible] = useState(false);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [showAssignSubject, setShowAssignSubject] = useState(false);
+  const [expandedClasses, setExpandedClasses] = useState({});
+
+  // State to track assigned subjects for each class
+  const [assignedSubjects, setAssignedSubjects] = useState({});
+
+  const assignSubjectsToClass = (classId, subjects) => {
+    setAssignedSubjects({
+      ...assignedSubjects,
+      [classId]: subjects,
+    });
+  };
+
   const fetchClassDetails = async () => {
     try {
       const response = await axios.get("http://localhost:4000/classdetail");
@@ -17,6 +31,40 @@ function Dclass() {
     }
   };
 
+  // Assign subjects to a class
+  const assignSubjects = async (classId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/classdetail/${classId}/assignsubjects`,
+        {
+          assignedSubjects: selectedSubjects,
+        }
+      );
+
+      if (response.status === 200) {
+        setSuccessMessage("Subjects assigned successfully");
+        setSelectedSubjects([]); // Clear selected subjects after assigning
+        setErrorMessage("");
+      } else {
+        setErrorMessage("Failed to assign subjects");
+        setSuccessMessage("");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error.message);
+      setErrorMessage("An error occurred: " + error.message);
+      setSuccessMessage("");
+    }
+  };
+
+  //forsubject
+  const handleAssignSubject = (subjectId) => {
+    // Add or remove the selected subject ID to/from the selectedSubjects state
+    if (selectedSubjects.includes(subjectId)) {
+      setSelectedSubjects(selectedSubjects.filter((id) => id !== subjectId));
+    } else {
+      setSelectedSubjects([...selectedSubjects, subjectId]);
+    }
+  };
   useEffect(() => {
     if (successMessage || errorMessage) {
       setMessageVisible(true);
@@ -142,6 +190,27 @@ function Dclass() {
                     >
                       Delete
                     </button>
+                    <button
+                      className="btn btn-success ml-3"
+                      style={{ marginLeft: "10px" }}
+                      onClick={() =>
+                        setExpandedClasses({
+                          ...expandedClasses,
+                          [classDetail._id]: !expandedClasses[classDetail._id],
+                        })
+                      }
+                    >
+                      {expandedClasses[classDetail._id]
+                        ? "Hide Assign Subject"
+                        : "Assign Subject"}
+                    </button>
+                    {expandedClasses[classDetail._id] && (
+                      <Assignsubject
+                        classId={classDetail._id}
+                        subjects={selectedSubjects}
+                        onAssignSubjects={assignSubjects}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}

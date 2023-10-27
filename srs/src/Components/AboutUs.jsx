@@ -1,18 +1,56 @@
-import React from "react";
+import { React, useState } from "react";
 import "./Pages/Aboutus.css";
-
+import axios from "axios";
+import { Link } from "react-router-dom";
 function AboutUs() {
+  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [messageSent, setMessageSent] = useState(false);
+  const [error, setError] = useState(null);
+  const handleMessageChange = (event) => {
+    setMessage(event.target.value);
+  };
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post("/message", {
+        messages: message,
+        email,
+      });
+      console.log(response.data);
+      setMessageSent(true);
+      // Clear the message and email fields
+      setMessage("");
+      setEmail("");
+      setTimeout(() => {
+        setMessageSent(false);
+      }, 1000);
+    } catch (error) {
+      console.error(error);
+      setError("Please fill up the fields");
+    }
+    setTimeout(() => {
+      setError(null);
+    }, 1000);
+  };
   return (
     <div>
       <div className="container mt-5">
         <div className="row">
           <div className="col-md-4">
-            <img
-              src={"/images/logo.png"}
-              alt="SRSLogo"
-              className="img-fluid"
-              id="logo"
-            />
+            <Link to={"/"}>
+              <img
+                src={"/images/logo.png"}
+                alt="SRSLogo"
+                className="img-fluid"
+                id="logo"
+              />
+            </Link>
           </div>
           <div className="col-md-8">
             <nav className="navbar navbar-expand-md navbar-" id="aboutusmain">
@@ -82,20 +120,17 @@ function AboutUs() {
             <div className="card">
               <div className="card-body">
                 <h5 className="card-title">Sign up for our Newsletter</h5>
-                <form
-                  action="https://example.com/submit-newsletter"
-                  method="post"
-                >
+                <form onSubmit={handleSubmit}>
                   <div className="form-group">
-                    <label htmlFor="name">Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="name"
-                      name="name"
-                      placeholder="Your Name"
-                      required
-                    />
+                    <label for="message">Message Box</label>
+                    <textarea
+                      class="form-control"
+                      rows="5"
+                      id="comment"
+                      placeholder="Enter your message"
+                      value={message}
+                      onChange={handleMessageChange}
+                    ></textarea>
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Email address</label>
@@ -105,13 +140,26 @@ function AboutUs() {
                       id="email"
                       name="email"
                       placeholder="Your Email"
-                      required
+                      value={email}
+                      onChange={handleEmailChange}
                     />
                   </div>
                   <button type="submit" className="btn btn-primary">
                     Subscribe
                   </button>
                 </form>
+                {messageSent && (
+                  <div className="container mt-3">
+                    <div className="alert alert-success">
+                      Message sent successfully!
+                    </div>
+                  </div>
+                )}
+                {error && (
+                  <div className="container mt-3">
+                    <div className="alert alert-danger">{error}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+
 function Admin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +39,9 @@ function Admin() {
         <div className="row">
           <div className="col-md-6 leftside">
             <p id="tname">MBSS</p>
-            <img src={"/images/logo.png"} className="logo" alt="logo" />
+            <Link to={"/"}>
+              <img src={"/images/logo.png"} className="logo" alt="logo" />
+            </Link>
             <h2 className="quote">
               Transforming Education:Effortlessly Accurate Online School
               Results!

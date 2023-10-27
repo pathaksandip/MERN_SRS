@@ -23,6 +23,8 @@ import Studentdetails from "./Components/Pages/Studentdetails";
 import Addexam from "./Components/Pages/ExamDeails/Addexam";
 import Examlist from "./Components/Pages/ExamDeails/Examlist";
 import AddexamDetails from "./Components/Pages/AddexamDetails";
+import Assignsubject from "./Components/Pages/Assignsubject";
+import MarksDisplay from "./Components/Pages/MarksDisplay";
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.withCredentials = true;
 function App() {
@@ -48,6 +50,8 @@ function App() {
           <Route path="/addexam" element={<Addexam />} />
           <Route path="/examlist" element={<Examlist />} />
           <Route path="/addexamdetails" element={<AddexamDetails />} />
+          <Route path="/assignsubject" element={<Assignsubject />} />
+          <Route path="/displaymarks" element={<MarksDisplay />} />
         </Routes>
       </Router>
     </>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Teacher.css";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import {Link, Navigate } from "react-router-dom";
 
 function Teacher() {
   const [username, setUsername] = useState("");
@@ -37,7 +37,7 @@ function Teacher() {
         <div className="row">
           <div className="col-md-6 leftside">
             <p id="tname">MBSS</p>
-            <img src={"/images/logo.png"} className="logo" alt="logo" />
+          <Link to={"/"}>  <img src={"/images/logo.png"} className="logo" alt="logo" /> </Link>
             <h2 className="quote">
               Transforming Education:Effortlessly Accurate Online School
               Results!

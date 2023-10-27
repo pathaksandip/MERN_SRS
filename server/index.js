@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const StudentSchema = require("./Schema/studentschema");
 const StudentClassDetails = require("./Schema/studentclassschema");
 const SubjectDetails = require("./Schema/subjectdetailschema");
+const Message = require("./Schema/Messageschema");
+const Marks = require("./Schema/Marks");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Add this middleware to parse JSON request body
 const Examdetails = require("./Schema/Examdetails");
@@ -430,6 +432,151 @@ app.get("/api/exams", async (req, res) => {
     res.status(500).json({ error: "An error occurred" });
   }
 });
+//formessage
+app.post("/message", async (req, res) => {
+  try {
+    const { messages, email } = req.body;
+    const response = await Message.create({
+      messages,
+      email,
+    });
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
+// Update assigned subjects for a class
+// app.put("/classdetail/:id/assignsubjects", async (req, res) => {
+//   try {
+//     const { id } = req.params; // Get the class ID from the URL parameters
+//     const { assignedSubjects } = req.body; // Get the assigned subjects from the request body
+
+//     // Assuming you have a Mongoose model named StudentClassDetails
+//     // Find the class by ID and update its assignedSubjects field
+//     const updatedClass = await StudentClassDetails.findByIdAndUpdate(
+//       id,
+//       { assignedSubjects },
+//       { new: true } // Get the updated document as a result
+//     );
+
+//     if (updatedClass) {
+//       res.status(200).json({ message: "Subjects assigned successfully" });
+//     } else {
+//       res.status(404).json({ message: "Class not found" });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "An error occurred" });
+//   }
+// });
+app.put("/classdetail/:id/assignsubjects", async (req, res) => {
+  try {
+    const { id } = req.params; // Get the class ID from the URL parameters
+    const { assignedSubjects } = req.body; // Get the assigned subjects from the request body
+
+    // Find the class by ID
+    const classDetails = await StudentClassDetails.findById(id);
+
+    if (classDetails) {
+      // Update the assignedSubjects field for the class
+      classDetails.assignedSubjects = assignedSubjects;
+
+      // Save the updated class document
+      const updatedClass = await classDetails.save();
+
+      res.status(200).json({ message: "Subjects assigned successfully" });
+    } else {
+      res.status(404).json({ message: "Class not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
+app.get("/classdetail/:id/assignsubjects", async (req, res) => {
+  try {
+    const { id } = req.params; // Get the class ID from the URL parameters
+
+    // Assuming you have a Mongoose model named StudentClassDetails
+    const classDetails = await StudentClassDetails.findById(id).populate(
+      "assignedSubjects"
+    ); // Populate the assignedSubjects with actual subject details
+
+    if (classDetails) {
+      res.status(200).json(classDetails.assignedSubjects);
+    } else {
+      res.status(404).json({ message: "Class not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
+//examdelete
+
+app.delete("/api/exam/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Examdetails.findByIdAndDelete(id);
+    res.status(200).json({ message: "Exam deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occured" });
+  }
+});
+//storefull marks
+app.post("/api/save-marks", (req, res) => {
+  const {
+    selectedExam,
+    examName,
+    selectedClass,
+    subjectMarks,
+    selectedClassName,
+  } = req.body;
+
+  const newMarks = new Marks({
+    selectedExam,
+    examName,
+    selectedClass,
+    selectedClassName,
+    subjectMarks,
+  });
+
+  newMarks
+    .save()
+    .then((marks) => {
+      res.json({ message: "Marks saved successfully", data: marks });
+    })
+    .catch((error) => {
+      console.error("Error saving marks:", error);
+      res.status(500).json({ message: "Internal server error" });
+    });
+});
+
+app.get("/api/check-exam-exists", async (req, res) => {
+  const { selectedExam, selectedClass } = req.query;
+
+  try {
+    // Assuming you have a Marks model (replace with your model name)
+    const result = await Marks.findOne({ selectedExam, selectedClass }).exec();
+
+    if (result) {
+      // The selected exam already exists for this class
+      res.json({ examExists: true });
+    } else {
+      // The selected exam does not exist for this class
+      res.json({ examExists: false });
+    }
+  } catch (err) {
+    console.error("Error during exam validation check", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Start the server
 app.listen(4000, () => {
   console.log("Server started on port 4000");
