@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ExamList from "./ExamDeails/Examlist";
-
+import { Navigate, useNavigate } from "react-router";
 function AddexamDetails() {
+  const navigate = useNavigate();
   const [examOptions, setExamOptions] = useState([]);
   const [selectedExam, setSelectedExam] = useState("");
   const [classNames, setClassNames] = useState([]);
@@ -121,16 +121,22 @@ function AddexamDetails() {
   };
 
   const handleSubmission = () => {
-    // Create a data object that includes selectedExam, selectedClass, subjectMarks
+    // Declare an array to store subject names
+    const subjectNames = assignedSubjects.map((subject) => subject.subjectName);
+
+    // Create a data object that includes selectedExam, selectedClass, subjectMarks, and subjectNames
     const data = {
       selectedExam,
       selectedClass,
-      subjectMarks,
+      subjectMarks: subjectMarks.map((subjectMark, index) => ({
+        subjectName: subjectNames[index],
+        fullMarks: subjectMark.fullMarks,
+        passMarks: subjectMark.passMarks,
+      })),
       selectedClassName,
       examName,
     };
 
-    // Send a GET request to check if the selected exam exists for the selected class
     axios
       .get("/api/check-exam-exists", {
         params: { selectedExam, selectedClass },
@@ -146,7 +152,6 @@ function AddexamDetails() {
           setSuccessMessage("");
           setTimeout(clearErrorMessage, 2000);
         } else {
-          // If the selected exam does not exist for this class, proceed to save the marks
           axios
             .post("/api/save-marks", data)
             .then((response) => {
@@ -154,6 +159,15 @@ function AddexamDetails() {
               setSuccessMessage("Submission success");
               setErrorMessage("");
               setTimeout(clearSuccessMessage, 2000);
+              navigate("/displaymarks", {
+                state: {
+                  selectedClass: selectedClassName,
+                  subjectNames: subjectNames,
+                  assignedSubjects: assignedSubjects,
+                  examName: examName,
+                  fullMarks: subjectMarks,
+                },
+              });
             })
             .catch((error) => {
               console.error("Error during marks submission", error);

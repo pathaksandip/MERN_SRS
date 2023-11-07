@@ -20,7 +20,6 @@ function Studentdetails() {
   const [showModal, setShowModal] = useState(false);
   const [classOptions, setClassOptions] = useState([]);
 
-
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
@@ -165,16 +164,16 @@ function Studentdetails() {
               {students
                 .filter(
                   (student) =>
-                    student.fname
+                    (student.fname || "")
                       .toLowerCase()
-                      .includes(searchQuery.toLowerCase()) &&
-                    student.studentclass
+                      .includes((searchQuery || "").toLowerCase()) &&
+                    (student.studentclass || "")
                       .toLowerCase()
-                      .includes(classSearchQuery.toLowerCase()) &&
-                    student.roll
+                      .includes((classSearchQuery || "").toLowerCase()) &&
+                    (student.roll || "")
                       .toString()
                       .toLowerCase()
-                      .includes(rollSearchQuery.toLowerCase())
+                      .includes((rollSearchQuery || "").toLowerCase())
                 )
                 .map((student) => (
                   <tr key={student._id}>
@@ -265,11 +264,11 @@ function Studentdetails() {
                   value={updatedClass}
                   onChange={(e) => setUpdatedClass(e.target.value)}
                 >
-                     {classOptions.map((className, index) => (
-                  <option key={index} value={className}>
-                    {className}
-                  </option>
-                ))}
+                  {classOptions.map((className, index) => (
+                    <option key={index} value={className}>
+                      {className}
+                    </option>
+                  ))}
                   {/* <option value="Play">Play</option>
                   <option value="Nursery">Nursery</option>
                   <option value="One">One</option>

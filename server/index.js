@@ -12,6 +12,7 @@ const Marks = require("./Schema/Marks");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Add this middleware to parse JSON request body
 const Examdetails = require("./Schema/Examdetails");
+const ObtainedMarks = require("./Schema/ObtainedMarks");
 // Enable CORS
 app.use(
   cors({
@@ -261,6 +262,18 @@ app.get("/studentsdetails", async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 });
+//forfetchingdetailstoselectedclass
+app.get("/sstudentsdetails", async (req, res) => {
+  try {
+    const selectedClass = req.query.class; // Get the class from the query parameter
+    const students = await Student.find({ studentclass: selectedClass });
+    res.json(students);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
 //deletestudent
 app.delete("/removestudent/:id", async (req, res) => {
   try {
@@ -574,6 +587,23 @@ app.get("/api/check-exam-exists", async (req, res) => {
   } catch (err) {
     console.error("Error during exam validation check", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//obtainedMarks
+app.post("/obtainedmarks", async (req, res) => {
+  try {
+    const obtainedMarksData = req.body;
+
+    const obtainedMarks = new ObtainedMarks(obtainedMarksData);
+
+    await obtainedMarks.save();
+
+    res.status(201).json({ message: "Obtained marks data saved successfully" });
+  } catch (error) {
+    res.status(500).json({
+      error: "An error occurred while saving the obtained marks data",
+    });
   }
 });
 
