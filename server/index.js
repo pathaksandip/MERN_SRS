@@ -10,9 +10,9 @@ const SubjectDetails = require("./Schema/subjectdetailschema");
 const Message = require("./Schema/Messageschema");
 const Marks = require("./Schema/Marks");
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.json()); // Add this middleware to parse JSON request body
+app.use(express.json());
 const Examdetails = require("./Schema/Examdetails");
-const ObtainedMarks = require("./Schema/ObtainedMarks");
+const ExamResult = require("./Schema/ExamResults");
 // Enable CORS
 app.use(
   cors({
@@ -589,18 +589,64 @@ app.get("/api/check-exam-exists", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-//obtainedMarks
 app.post("/obtainedmarks", async (req, res) => {
   try {
-    const obtainedMarksData = req.body;
+    let obtainedMarksDetails = req.body;
 
-    const obtainedMarks = new ObtainedMarks(obtainedMarksData);
+    // Ensure obtainedMarksDetails is an array or wrap it in an array
+    if (!Array.isArray(obtainedMarksDetails)) {
+      obtainedMarksDetails = [obtainedMarksDetails];
+    }
 
-    await obtainedMarks.save();
+    // Map the data to match the ExamResult schema
+    const mappedData = obtainedMarksDetails.reduce((result, item) => {
+      const flatSubjects = item.studentName.subjects.reduce(
+        (flattened, subjectArray) => flattened.concat(subjectArray),
+        []
+      );
+      console.log("FLAT SUSBJECT", flatSubjects);
+
+      const student = {
+        name: item.studentName.name,
+        rollNumber: item.studentName.rollNumber,
+        subjects: flatSubjects.map((subject) => ({
+          subject: subject.subject,
+          obtainedMarks: subject.obtainedMarks,
+        })),
+      };
+
+      // Find existing ExamResult entry for the same class and examType
+      const existingExamResult = result.find(
+        (entry) =>
+          entry.examType === item.examType && entry.class === item.class
+      );
+
+      if (existingExamResult) {
+        // Add student to existing ExamResult
+        existingExamResult.students.push(student);
+      } else {
+        // Create a new ExamResult entry
+        result.push({
+          examType: item.examType,
+          class: item.class,
+          students: [student],
+        });
+      }
+
+      return result;
+    }, []);
+
+    console.log("Mapped data:", mappedData);
+
+    const savedData = await ExamResult.insertMany(mappedData);
+    console.log("Saved data:", savedData);
 
     res.status(201).json({ message: "Obtained marks data saved successfully" });
   } catch (error) {
+    console.error("Error while saving data:", error);
+    if (error.errors) {
+      console.error("Validation errors:", error.errors);
+    }
     res.status(500).json({
       error: "An error occurred while saving the obtained marks data",
     });
