@@ -20,7 +20,7 @@ const StudentSchema = new mongoose.Schema({
 });
 
 const ExamResultSchema = new mongoose.Schema({
-  class: {
+  Studentclass: {
     type: String,
   },
   examType: {

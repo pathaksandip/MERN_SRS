@@ -591,20 +591,19 @@ app.get("/api/check-exam-exists", async (req, res) => {
 });
 app.post("/obtainedmarks", async (req, res) => {
   try {
-    let obtainedMarksDetails = req.body;
+    const { metadata, ObtainedMarksDetails } = req.body;
 
-    // Ensure obtainedMarksDetails is an array or wrap it in an array
-    if (!Array.isArray(obtainedMarksDetails)) {
-      obtainedMarksDetails = [obtainedMarksDetails];
+    // Ensure ObtainedMarksDetails is an array or wrap it in an array
+    if (!Array.isArray(ObtainedMarksDetails)) {
+      ObtainedMarksDetails = [ObtainedMarksDetails];
     }
 
     // Map the data to match the ExamResult schema
-    const mappedData = obtainedMarksDetails.reduce((result, item) => {
+    const mappedData = ObtainedMarksDetails.reduce((result, item) => {
       const flatSubjects = item.studentName.subjects.reduce(
         (flattened, subjectArray) => flattened.concat(subjectArray),
         []
       );
-      console.log("FLAT SUSBJECT", flatSubjects);
 
       const student = {
         name: item.studentName.name,
@@ -618,7 +617,7 @@ app.post("/obtainedmarks", async (req, res) => {
       // Find existing ExamResult entry for the same class and examType
       const existingExamResult = result.find(
         (entry) =>
-          entry.examType === item.examType && entry.class === item.class
+          entry.examType === metadata.examType && entry.Studentclass === metadata.Studentclass
       );
 
       if (existingExamResult) {
@@ -627,8 +626,8 @@ app.post("/obtainedmarks", async (req, res) => {
       } else {
         // Create a new ExamResult entry
         result.push({
-          examType: item.examType,
-          class: item.class,
+          examType: metadata.examType,
+          Studentclass: metadata.Studentclass,
           students: [student],
         });
       }

@@ -34,28 +34,28 @@ function MarksDisplay() {
   }, [selectedClass, subjectNames]);
 
   const handleSubmit = () => {
+    const metadata = {
+      Studentclass: selectedClass,
+      examType: examName,
+    };
     const ObtainedMarksDetails = students.map((student, studentIndex) => ({
       studentName: {
         name: student.fname,
         rollNumber: student.roll,
         subjects: subjectNames.map((subject, subjectIndex) => ({
           subject: subject,
-          // fullMarks: fullMarks[subjectIndex],
           obtainedMarks: obtainedMarks[studentIndex][subjectIndex],
         })),
       },
     }));
 
-    const data = { examType: examName, class: selectedClass };
-
-    // Convert ObtainedMarksDetails to a JSON string
-    // const ObtainedMarksDetailsString = ObtainedMarksDetails;
-
-    console.log("SEND DATA  ", ObtainedMarksDetails);
-
-    // Now, you can use ObtainedMarksDetailsString for submission
+    const data = {
+      metadata: metadata,
+      ObtainedMarksDetails: ObtainedMarksDetails,
+    };
+    console.log("STUDENT DATA:", data);
     axios
-      .post("/obtainedmarks", ObtainedMarksDetails)
+      .post("/obtainedmarks", data)
       .then((response) => {
         console.log("Data submission success", response.data);
       })
