@@ -138,47 +138,24 @@ function AddexamDetails() {
     };
 
     axios
-      .get("/api/check-exam-exists", {
-        params: { selectedExam, selectedClass },
-      })
-      .then((response) => {
-        if (response.data.examExists) {
-          console.log(
-            "The selected exam already exists for this class. Cannot submit."
-          );
-          setErrorMessage(
-            "The selected exam already exists for this class. Cannot submit."
-          );
-          setSuccessMessage("");
-          setTimeout(clearErrorMessage, 2000);
-        } else {
-          axios
-            .post("/api/save-marks", data)
-            .then((response) => {
-              console.log("Submission success");
-              setSuccessMessage("Submission success");
-              setErrorMessage("");
-              setTimeout(clearSuccessMessage, 2000);
-              navigate("/displaymarks", {
-                state: {
-                  selectedClass: selectedClassName,
-                  subjectNames: subjectNames,
-                  assignedSubjects: assignedSubjects,
-                  examName: examName,
-                  fullMarks: subjectMarks,
-                },
-              });
-            })
-            .catch((error) => {
-              console.error("Error during marks submission", error);
-              setTimeout(clearErrorMessage, 2000);
-            });
-        }
+      .post("/api/save-marks", data)
+      .then(() => {
+        console.log("Submission success");
+        setSuccessMessage("Submission success");
+        setErrorMessage("");
+        setTimeout(clearSuccessMessage, 2000);
+        navigate("/displaymarks", {
+          state: {
+            selectedClass: selectedClassName,
+            subjectNames: subjectNames,
+            assignedSubjects: assignedSubjects,
+            examName: examName,
+            fullMarks: subjectMarks,
+          },
+        });
       })
       .catch((error) => {
-        console.error("Error during exam validation check", error);
-        setErrorMessage("Error during exam validation check");
-        setSuccessMessage("");
+        console.error("Error during marks submission", error);
         setTimeout(clearErrorMessage, 2000);
       });
   };

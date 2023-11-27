@@ -7,6 +7,12 @@ const StudentSubjectSchema = new mongoose.Schema({
   obtainedMarks: {
     type: String,
   },
+  fullMarks: {
+    type: String,
+  },
+  passMarks: {
+    type: String,
+  },
 });
 
 const StudentSchema = new mongoose.Schema({

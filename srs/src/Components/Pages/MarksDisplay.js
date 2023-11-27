@@ -8,8 +8,10 @@ function MarksDisplay() {
   const selectedClass = location.state.selectedClass;
   const subjectNames = location.state.subjectNames || [];
   const examName = location.state.examName;
-  const fullMarks = location.state.fullMarks || [];
+  const SubjectMarks = location.state.fullMarks || [];
   const [obtainedMarks, setObtainedMarks] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState(null);
 
   useEffect(() => {
     if (selectedClass) {
@@ -33,55 +35,104 @@ function MarksDisplay() {
     }
   }, [selectedClass, subjectNames]);
 
-  const handleSubmit = () => {
+  // const checkDetails = async () => {
+  //   try {
+  //     const response = await axios.get("/api/check-exam-exist", {
+  //       params: {
+  //         selectedClass,
+  //         examName,
+  //       },
+  //     });
+  //     console.log("API Check Response:", response.data);
+  //     if (response.status === 200) {
+  //       console.log(
+  //         "The selected exam already exists for this class. Cannot submit."
+  //       );
+  //       setSubmissionStatus("error");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     // Handle the error if needed
+  //     console.error("Error during API call", error);
+  //   }
+  // };
+  
+
+  const handleSubmit = async () => {
     const metadata = {
       Studentclass: selectedClass,
       examType: examName,
     };
-    const ObtainedMarksDetails = students.map((student, studentIndex) => ({
-      studentName: {
-        name: student.fname,
-        rollNumber: student.roll,
-        subjects: subjectNames.map((subject, subjectIndex) => ({
-          subject: subject,
-          obtainedMarks: obtainedMarks[studentIndex][subjectIndex],
-        })),
-      },
-    }));
-
-    const data = {
-      metadata: metadata,
-      ObtainedMarksDetails: ObtainedMarksDetails,
-    };
-    console.log("STUDENT DATA:", data);
-    axios
-      .post("/obtainedmarks", data)
-      .then((response) => {
-        console.log("Data submission success", response.data);
-      })
-      .catch((error) => {
-        console.error("Error During submission", error);
+  
+    try {
+      // Check if the exam exists for any student in the selected class
+      const response = await axios.get("/api/check-exam-exist", {
+        params: {
+          Studentclass: selectedClass,
+          examType: examName,
+        },
       });
+      
+  
+      if (response.data.examExists) {
+        console.log("The selected exam already exists for this class. Cannot submit.");
+        setSubmissionStatus("error");
+        return;
+      }
+  
+      const ObtainedMarksDetails = students.map((student, studentIndex) => ({
+        studentName: {
+          name: student.fname,
+          rollNumber: student.roll,
+          subjects: subjectNames.map((subject, subjectIndex) => ({
+            subject: subject,
+            obtainedMarks: obtainedMarks[studentIndex][subjectIndex],
+            fullMarks: SubjectMarks[subjectIndex].fullMarks,
+            passMarks: SubjectMarks[subjectIndex].passMarks,
+          })),
+        },
+      }));
+  
+      const data = {
+        metadata: metadata,
+        ObtainedMarksDetails: ObtainedMarksDetails,
+      };
+  
+      axios
+        .post("/obtainedmarks", data)
+        .then((response) => {
+          console.log("Data submission success", response.data);
+          setSubmissionStatus("success");
+  
+          // Clear the success message after 5 seconds
+          setTimeout(() => {
+            setSubmissionStatus(null);
+          }, 5000);
+        })
+        .catch((error) => {
+          console.error("Error During submission", error);
+          setSubmissionStatus("error");
+        });
+    } catch (error) {
+      console.error("Error during exam validation check", error);
+      setSubmissionStatus("error");
+    }
   };
-
+  
   const handleObtainedMarksChange = (studentIndex, subjectIndex, value) => {
     const updatedObtainedMarks = [...obtainedMarks];
     if (!updatedObtainedMarks[studentIndex]) {
       updatedObtainedMarks[studentIndex] = [];
     }
+    const fullMarks = SubjectMarks[subjectIndex].fullMarks;
+    const validatedValue = Math.min(Number(value), fullMarks);
+
     // Update the obtainedMarks for the specific subject and student
-    updatedObtainedMarks[studentIndex][subjectIndex] = value;
+    updatedObtainedMarks[studentIndex][subjectIndex] = validatedValue;
 
     // Set the updated obtainedMarks
     setObtainedMarks(updatedObtainedMarks);
-
-    // Log the current state of obtainedMarks with subject names
-    const logObject = subjectNames.reduce((acc, subjectName, index) => {
-      acc[subjectName] = updatedObtainedMarks[studentIndex][index];
-      return acc;
-    }, {});
-
-    console.log(logObject);
+    setSubmissionStatus(null); // Reset submission status on any input change
   };
 
   console.log(JSON.stringify(obtainedMarks));
@@ -96,6 +147,7 @@ function MarksDisplay() {
           <h5>Exam: {examName}</h5>
         </div>
       </div>
+
       <table className="table">
         <thead>
           <tr>
@@ -104,7 +156,7 @@ function MarksDisplay() {
             {subjectNames.map((subjectName, index) => (
               <th key={index}>
                 {subjectName}
-                <br />({fullMarks[index].fullMarks})
+                <br />({SubjectMarks[index].fullMarks})
               </th>
             ))}
           </tr>
@@ -118,7 +170,6 @@ function MarksDisplay() {
                 <td key={subject._id}>
                   <input
                     type="number"
-                    placeholder={`Obtained marks for ${subject}`}
                     value={obtainedMarks[studentIndex][subjectIndex]}
                     onChange={(e) =>
                       handleObtainedMarksChange(
@@ -127,6 +178,7 @@ function MarksDisplay() {
                         e.target.value
                       )
                     }
+                    max={SubjectMarks[subjectIndex].fullMarks}
                   />
                 </td>
               ))}
@@ -134,6 +186,16 @@ function MarksDisplay() {
           ))}
         </tbody>
       </table>
+      {submissionStatus === "success" && (
+        <div style={{ color: "green", fontSize: "16px", marginBottom: "10px" }}>
+          Submission successful!
+        </div>
+      )}
+      {submissionStatus === "error" && (
+        <div style={{ color: "red", fontSize: "16px", marginBottom: "10px" }}>
+          Submission failed. The selected exam already exists for this class.
+        </div>
+      )}
       <button
         style={{ display: "block", margin: "0 auto" }}
         onClick={handleSubmit}

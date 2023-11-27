@@ -570,25 +570,25 @@ app.post("/api/save-marks", (req, res) => {
     });
 });
 
-app.get("/api/check-exam-exists", async (req, res) => {
-  const { selectedExam, selectedClass } = req.query;
+// app.get("/api/check-exam-exists", async (req, res) => {
+//   const { selectedExam, selectedClass } = req.query;
 
-  try {
-    // Assuming you have a Marks model (replace with your model name)
-    const result = await Marks.findOne({ selectedExam, selectedClass }).exec();
+//   try {
+//     // Assuming you have a Marks model (replace with your model name)
+//     const result = await ExamResult.findOne({ Studentclass, examType }).exec();
 
-    if (result) {
-      // The selected exam already exists for this class
-      res.json({ examExists: true });
-    } else {
-      // The selected exam does not exist for this class
-      res.json({ examExists: false });
-    }
-  } catch (err) {
-    console.error("Error during exam validation check", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     if (result) {
+//       // The selected exam already exists for this class
+//       res.json({ examExists: true });
+//     } else {
+//       // The selected exam does not exist for this class
+//       res.json({ examExists: false });
+//     }
+//   } catch (err) {
+//     console.error("Error during exam validation check", err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 app.post("/obtainedmarks", async (req, res) => {
   try {
     const { metadata, ObtainedMarksDetails } = req.body;
@@ -611,13 +611,16 @@ app.post("/obtainedmarks", async (req, res) => {
         subjects: flatSubjects.map((subject) => ({
           subject: subject.subject,
           obtainedMarks: subject.obtainedMarks,
+          fullMarks: subject.fullMarks,
+          passMarks: subject.passMarks,
         })),
       };
 
       // Find existing ExamResult entry for the same class and examType
       const existingExamResult = result.find(
         (entry) =>
-          entry.examType === metadata.examType && entry.Studentclass === metadata.Studentclass
+          entry.examType === metadata.examType &&
+          entry.Studentclass === metadata.Studentclass
       );
 
       if (existingExamResult) {
@@ -649,6 +652,28 @@ app.post("/obtainedmarks", async (req, res) => {
     res.status(500).json({
       error: "An error occurred while saving the obtained marks data",
     });
+  }
+});
+//checkwhether seleced exam exists or not for same class
+app.get("/api/check-exam-exist", async (req, res) => {
+  const { Studentclass, examType } = req.query;
+  console.log("Exam Type:", examType);
+  console.log("Student Class:", Studentclass);
+
+  try {
+    // Assuming you have a Marks model (replace with your model name)
+    const result = await ExamResult.findOne({ Studentclass, examType }).exec();
+    console.log("Result is", result);
+    if (result === null) {
+      // The selected exam does not exist for this class
+      res.status(200).json({ examExists: false });
+    } else {
+      // The selected exam does not exist for this class
+      res.status(404).json({ examExists: false });
+    }
+  } catch (err) {
+    console.error("Error during exam validation check", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
