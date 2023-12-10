@@ -570,25 +570,6 @@ app.post("/api/save-marks", (req, res) => {
     });
 });
 
-// app.get("/api/check-exam-exists", async (req, res) => {
-//   const { selectedExam, selectedClass } = req.query;
-
-//   try {
-//     // Assuming you have a Marks model (replace with your model name)
-//     const result = await ExamResult.findOne({ Studentclass, examType }).exec();
-
-//     if (result) {
-//       // The selected exam already exists for this class
-//       res.json({ examExists: true });
-//     } else {
-//       // The selected exam does not exist for this class
-//       res.json({ examExists: false });
-//     }
-//   } catch (err) {
-//     console.error("Error during exam validation check", err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
 app.post("/obtainedmarks", async (req, res) => {
   try {
     const { metadata, ObtainedMarksDetails } = req.body;
@@ -651,6 +632,19 @@ app.post("/obtainedmarks", async (req, res) => {
     }
     res.status(500).json({
       error: "An error occurred while saving the obtained marks data",
+    });
+  }
+});
+app.get("/obtainedmarks", async (req, res) => {
+  try {
+    // Fetch all data from the ExamResult collection
+    const obtainedMarksData = await ExamResult.find({});
+
+    res.status(200).json(obtainedMarksData);
+  } catch (error) {
+    console.error("Error while fetching obtained marks data:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching the obtained marks data",
     });
   }
 });
