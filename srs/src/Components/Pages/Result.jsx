@@ -138,10 +138,16 @@ function Result() {
   const handleGenerateGradeSheet = async () => {
     try {
       setPdfLoading(true);
+      let gpa = "";
+      const logoPath = "/Images/logo.png";
+      const logoWidth = 30; // Set your desired logo width
+      const logoHeight = 30;
 
+      const GradeSheet = "/Images/gradesheet.png";
+      const GradeWidth = 130; // Set your desired logo width
+      const GradeHeight = 90;
       // Create a new jsPDF instance
       const doc = new jsPDF();
-
       // Iterate over each student and add their details to the PDF
       for (let index = 0; index < obtainedMarksData.length; index++) {
         const student = obtainedMarksData[index];
@@ -150,7 +156,7 @@ function Result() {
         if (index > 0) {
           doc.addPage();
         }
-
+        const finalGrade = FinalGPA(gpa);
         // Set font size and add header
         const headingFontSize = 40; // Set your desired font size
         const headingFontStyle = "bold"; // Set the font style to bold
@@ -161,7 +167,6 @@ function Result() {
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
         const borderWidth = 2; // Set your desired border width
-
         doc.setLineWidth(borderWidth);
         doc.rect(
           borderMargin,
@@ -189,6 +194,7 @@ function Result() {
           (doc.getStringUnitWidth("School Result System") * headingFontSize) /
           doc.internal.scaleFactor;
         const xOffset = (doc.internal.pageSize.width - textWidth) / 2;
+        doc.addImage(logoPath, "PNG", 9, 4, logoWidth, logoHeight);
 
         doc.text("School Result System", xOffset, 10 + headingMargin);
 
@@ -235,24 +241,43 @@ function Result() {
         // Add "Issued Date"
         doc.text(`Issued Date: ${formattedDate}`, 140, 46);
 
-        doc.text(`Student Name: ${student.name}`, 10, 70);
-        doc.text(`Roll Number: ${student.rollNumber}`, 10, 80);
+        const rectX = 5; // Adjust the X-coordinate as needed
+        const rectY = 48; // Adjust the Y-coordinate as needed
+        const rectWidth = 200; // Adjust the width as needed
+        const rectHeight = 25; // Adjust the height as needed
 
+        doc.setDrawColor(0, 0, 0); // Set the border color to black
+        doc.setFillColor(255, 255, 255); // Set the fill color to white
+        doc.rect(rectX, rectY, rectWidth, rectHeight, "FD");
+
+        const nameX = rectX + 5; // Adjust the X-coordinate to position the name inside the rectangle
+        const nameY = rectY + 10;
+
+        const nameA = rectX + 150; // Adjust the X-coordinate to position the name inside the rectangle
+        const nameB = rectY + 10;
+        const nameC = rectX + 5;
+        const nameD = rectY + 20;
+        doc.text(`Student Name: ${student.name}`, nameX, nameY);
+        doc.text(`Roll Number: ${student.rollNumber}`, nameA, nameB);
+        doc.text(`Class: ${selectedClassName}`, nameC, nameD);
         // Add table with subjects, obtained marks, etc.
         doc.autoTable({
-          startY: 90,
+          startY: 80,
           head: [["S.N", "Subject", "Grade Points", "GPA"]],
           body: student.subjects.map((subject, sn) => {
             const gradePoints = showGradePoints
-              ? calculateSubjectGradePoints(
-                  subject.obtainedMarks,
-                  subject.fullMarks
-                ).toFixed(2)
-              : "";
+              ? parseFloat(
+                  calculateSubjectGradePoints(
+                    subject.obtainedMarks,
+                    subject.fullMarks
+                  ).toFixed(2)
+                )
+              : null; // Assuming a default value of 0 if showGradePoints is false
 
-            const gpa = calculateGPA(gradePoints); // Add a function to calculate GPA
-
-            return [sn + 1, subject.subject, gradePoints, gpa];
+            const gpa = calculateGPA(gradePoints);
+            const finalGrade = FinalGPA(parseFloat(gpa));
+            // Add a function to calculate GPA
+            return [sn + 1, subject.subject, gradePoints, gpa, finalGrade];
           }),
           styles: {
             cellPadding: 2,
@@ -267,22 +292,41 @@ function Result() {
           },
         });
 
+        const rectA = 5; // Adjust the X-coordinate as needed
+        const rectB = doc.autoTable.previous.finalY + 10;
+        const rectlength = 200; // Adjust the width as needed
+        const rectbreadth = 15;
+        const nameE = rectA + 5;
+        const nameF = rectB + 10;
+
+        const nameG = rectA + 170;
+        const nameH = rectB + 10;
+        const nameI = rectA + 100;
+        doc.setDrawColor(0, 0, 0); // Set the border color to black
+        doc.setFillColor(255, 255, 255); // Set the fill color to white
+        doc.rect(rectA, rectB, rectlength, rectbreadth, "FD");
         // Add total marks, total grade points, rank, remarks, etc.
+
         doc.text(
-          `Total Marks: ${student.totalMarks}`,
-          10,
-          doc.autoTable.previous.finalY + 10
+          `Grade Point Average (GPA): ${student.totalGradePoints}`,
+          nameE,
+          nameF
         );
+        doc.text(`Rank: ${student.rank}`, nameG, nameH);
         doc.text(
-          `Total Grade Points: ${student.totalGradePoints}`,
-          10,
-          doc.autoTable.previous.finalY + 20
+          `Final Grade: ${FinalGPA(student.totalGradePoints)}`,
+          nameI,
+          nameH
         );
-        doc.text(
-          `Rank: ${student.rank}`,
-          10,
-          doc.autoTable.previous.finalY + 30
+        doc.addImage(
+          GradeSheet,
+          "PNG",
+          6,
+          doc.autoTable.previous.finalY + 33,
+          GradeWidth,
+          GradeHeight
         );
+
         doc.text(
           `Remarks: ${
             student.subjects.every(
@@ -292,9 +336,15 @@ function Result() {
               ? "Passed"
               : "Failed"
           }`,
-          10,
-          doc.autoTable.previous.finalY + 40
+          155,
+          doc.autoTable.previous.finalY + 33
         );
+        doc.text(`...........................`, 10, 270);
+        doc.text(`........................`, 97, 270);
+        doc.text(`........................`, 163, 270);
+        doc.text(`Class Teacher`, 12, 275);
+        doc.text(`Principal`, 102, 275);
+        doc.text(`Guardian`, 167, 275);
       }
 
       // Get the blob URL of the PDF
@@ -313,19 +363,38 @@ function Result() {
   };
 
   function calculateGPA(gradePoints) {
-    if (gradePoints >= 4.0) {
+    if (gradePoints >= 3.6) {
       return "A+";
-    } else if (gradePoints >= 3.6) {
-      return "A";
     } else if (gradePoints >= 3.2) {
-      return "B+";
+      return "A";
     } else if (gradePoints >= 2.8) {
-      return "B";
+      return "B+";
     } else if (gradePoints >= 2.4) {
-      return "C+";
+      return "B";
     } else if (gradePoints >= 2.0) {
-      return "C";
+      return "C+";
     } else if (gradePoints >= 1.6) {
+      return "C";
+    } else if (gradePoints >= 1.2) {
+      return "D+";
+    } else {
+      return "NG";
+    }
+  }
+  function FinalGPA(gpa) {
+    if (gpa >= 3.6) {
+      return "A+";
+    } else if (gpa >= 3.2) {
+      return "A";
+    } else if (gpa >= 2.8) {
+      return "B+";
+    } else if (gpa >= 2.4) {
+      return "B";
+    } else if (gpa >= 2.0) {
+      return "C+";
+    } else if (gpa >= 1.6) {
+      return "C";
+    } else if (gpa >= 1.2) {
       return "D+";
     } else {
       return "NG";

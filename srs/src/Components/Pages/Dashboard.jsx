@@ -153,7 +153,7 @@ function Dashboard() {
           <div className="col-md-10">
             {activeTab === "home" && <Dhome />}
             {activeTab === "student" && <Dstudent />}
-            {activeTab === "teacher" && <Ateacher />}
+            {activeTab  === "teacher" && <Ateacher />}
             {activeTab === "class" && <Dclass />}
             {activeTab === "subject" && <Dsubject />}
             {activeTab === "exam" && <Dexam />}
