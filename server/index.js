@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("admin", userSchema);
 
 app.post("/loginadmin", async (req, res) => {
-  const { username, password } = req.body;
+  const { username } = req.body;
   try {
     const response = await User.findOne({
       username: username,
@@ -67,7 +67,6 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log(username, password);
     const user = await User.findOne({
       username,
     });
@@ -137,7 +136,6 @@ app.post("/teacherdetail", async (req, res) => {
 app.post("/login/teacher", async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log(username, password);
     const foundTeacher = await Teacher.findOne({
       tusername: username,
       tpassword: password,
@@ -460,30 +458,6 @@ app.post("/message", async (req, res) => {
   }
 });
 
-// Update assigned subjects for a class
-// app.put("/classdetail/:id/assignsubjects", async (req, res) => {
-//   try {
-//     const { id } = req.params; // Get the class ID from the URL parameters
-//     const { assignedSubjects } = req.body; // Get the assigned subjects from the request body
-
-//     // Assuming you have a Mongoose model named StudentClassDetails
-//     // Find the class by ID and update its assignedSubjects field
-//     const updatedClass = await StudentClassDetails.findByIdAndUpdate(
-//       id,
-//       { assignedSubjects },
-//       { new: true } // Get the updated document as a result
-//     );
-
-//     if (updatedClass) {
-//       res.status(200).json({ message: "Subjects assigned successfully" });
-//     } else {
-//       res.status(404).json({ message: "Class not found" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "An error occurred" });
-//   }
-// });
 app.put("/classdetail/:id/assignsubjects", async (req, res) => {
   try {
     const { id } = req.params; // Get the class ID from the URL parameters
@@ -589,6 +563,7 @@ app.post("/obtainedmarks", async (req, res) => {
       const student = {
         name: item.studentName.name,
         rollNumber: item.studentName.rollNumber,
+        admissionId: item.studentName.admissionID,
         subjects: flatSubjects.map((subject) => ({
           subject: subject.subject,
           obtainedMarks: subject.obtainedMarks,
@@ -619,10 +594,10 @@ app.post("/obtainedmarks", async (req, res) => {
       return result;
     }, []);
 
-    console.log("Mapped data:", mappedData);
+    // console.log("Mapped data:", mappedData);
 
     const savedData = await ExamResult.insertMany(mappedData);
-    console.log("Saved data:", savedData);
+    // console.log("Saved data:", savedData);
 
     res.status(201).json({ message: "Obtained marks data saved successfully" });
   } catch (error) {
@@ -635,6 +610,99 @@ app.post("/obtainedmarks", async (req, res) => {
     });
   }
 });
+
+// for checking the result from the studnet
+app.post("/result/obtained", async (req, res) => {
+  try {
+    const { admissionID, selectedClass, selectedExam } = req.body;
+    const resultDoc = await ExamResult.findOne({
+      "students.admissionId": admissionID,
+      examType: selectedExam,
+      Studentclass: selectedClass,
+    });
+
+    if (resultDoc) {
+      const calculateSubjectGradePoints = (obtainedMarks, fullMarks) => {
+        const percentage = (obtainedMarks / fullMarks) * 100;
+
+        if (percentage >= 90) {
+          return 4.0;
+        } else if (percentage >= 80) {
+          return 3.6;
+        } else if (percentage >= 70) {
+          return 3.2;
+        } else if (percentage >= 60) {
+          return 2.8;
+        } else if (percentage >= 50) {
+          return 2.4;
+        } else if (percentage >= 40) {
+          return 2.0;
+        } else if (percentage >= 35) {
+          return 1.6;
+        } else {
+          return 0.0; // Default grade point for marks below 40% of full marks
+        }
+      };
+
+      const student = resultDoc.students.find(
+        (student) =>
+          parseInt(student.admissionId, 10) === parseInt(admissionID, 10)
+      );
+
+      if (student) {
+        const gradePointsArray = await Promise.all(
+          student.subjects.map(async (subject) => {
+            return calculateSubjectGradePoints(
+              subject.obtainedMarks,
+              subject.fullMarks
+            );
+          })
+        );
+
+        const totalGradePoints =
+          gradePointsArray.length > 0
+            ? (
+                gradePointsArray.reduce(
+                  (sum, gradePoint) => sum + gradePoint,
+                  0
+                ) / gradePointsArray.length
+              ).toFixed(2)
+            : 0;
+
+        const remarks =
+          student.subjects.every(
+            (subject) =>
+              parseInt(subject.obtainedMarks, 10) >= subject.passMarks
+          ) && totalGradePoints > 0
+            ? "Passed"
+            : "Failed";
+
+        console.log(`Remarks for ${student.name}: `, remarks);
+        console.log(`Grade points for ${student.name}: `, totalGradePoints);
+
+        // Update the student object with total grade points and remarks
+        const studentWithTotalGradePoints = {
+          ...student.toObject(),
+          totalGradePoints,
+          remarks,
+        };
+
+        // Respond with the updated student object
+        res.status(200).json({ student: studentWithTotalGradePoints });
+      } else {
+        console.log("Student not found");
+        res.status(404).json({ error: "Student not found" });
+      }
+    } else {
+      console.log("Result not found");
+      res.status(404).json({ error: "Result not found" });
+    }
+  } catch (error) {
+    console.log("ERROR", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.get("/obtainedmarks", async (req, res) => {
   try {
     // Fetch all data from the ExamResult collection

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import html2canvas from "html2canvas";
+
 function Result() {
   const [examNames, setExamNames] = useState([]);
   const [selectedExamName, setSelectedExamName] = useState("");

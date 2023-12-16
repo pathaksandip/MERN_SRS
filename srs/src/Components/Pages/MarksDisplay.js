@@ -56,14 +56,13 @@ function MarksDisplay() {
   //     console.error("Error during API call", error);
   //   }
   // };
-  
 
   const handleSubmit = async () => {
     const metadata = {
       Studentclass: selectedClass,
       examType: examName,
     };
-  
+
     try {
       // Check if the exam exists for any student in the selected class
       const response = await axios.get("/api/check-exam-exist", {
@@ -72,18 +71,20 @@ function MarksDisplay() {
           examType: examName,
         },
       });
-      
-  
+
       if (response.data.examExists) {
-        console.log("The selected exam already exists for this class. Cannot submit.");
+        console.log(
+          "The selected exam already exists for this class. Cannot submit."
+        );
         setSubmissionStatus("error");
         return;
       }
-  
+
       const ObtainedMarksDetails = students.map((student, studentIndex) => ({
         studentName: {
           name: student.fname,
           rollNumber: student.roll,
+          admissionID: student.admissionID,
           subjects: subjectNames.map((subject, subjectIndex) => ({
             subject: subject,
             obtainedMarks: obtainedMarks[studentIndex][subjectIndex],
@@ -92,18 +93,18 @@ function MarksDisplay() {
           })),
         },
       }));
-  
+
       const data = {
         metadata: metadata,
         ObtainedMarksDetails: ObtainedMarksDetails,
       };
-  
+
       axios
         .post("/obtainedmarks", data)
         .then((response) => {
           console.log("Data submission success", response.data);
           setSubmissionStatus("success");
-  
+
           // Clear the success message after 5 seconds
           setTimeout(() => {
             setSubmissionStatus(null);
@@ -118,7 +119,7 @@ function MarksDisplay() {
       setSubmissionStatus("error");
     }
   };
-  
+
   const handleObtainedMarksChange = (studentIndex, subjectIndex, value) => {
     const updatedObtainedMarks = [...obtainedMarks];
     if (!updatedObtainedMarks[studentIndex]) {
@@ -153,6 +154,8 @@ function MarksDisplay() {
           <tr>
             <th>Student's Name</th>
             <th>Roll No</th>
+            <th>Student ID</th>
+
             {subjectNames.map((subjectName, index) => (
               <th key={index}>
                 {subjectName}
@@ -166,6 +169,7 @@ function MarksDisplay() {
             <tr key={student._id}>
               <td>{student.fname}</td>
               <td>{student.roll}</td>
+              <td>{student.admissionID}</td>
               {subjectNames.map((subject, subjectIndex) => (
                 <td key={subject._id}>
                   <input

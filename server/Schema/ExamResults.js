@@ -22,6 +22,9 @@ const StudentSchema = new mongoose.Schema({
   rollNumber: {
     type: Number,
   },
+  admissionId: {
+    type: Number,
+  },
   subjects: [StudentSubjectSchema],
 });
 

@@ -6,8 +6,8 @@ import "./Dhome.css";
 
 function Dhome() {
   return (
-    <div>
-      <div className="hometext">
+    <div className="home">
+      <div className="hometext ">
         <h1>Welcome to Result Management System</h1>
         <p className="text">
           This is the dashboard for managing student results, classes, teachers,

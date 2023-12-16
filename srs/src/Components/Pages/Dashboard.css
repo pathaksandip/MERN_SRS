@@ -1,5 +1,6 @@
 .sidebar {
   background-color: #152259;
+  position: relative;
 }
 .studentDet {
   display: none;
