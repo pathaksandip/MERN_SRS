@@ -1,10 +1,16 @@
 .sidebar {
   background-color: #152259;
-  position: relative;
+  position: sticky;
+  overflow-y: auto;
 }
 .studentDet {
   display: none;
 }
+body {
+  overflow-x: hidden;
+  
+}
+
 .studentDetShop {
   display: block;
 }
@@ -28,12 +34,11 @@ button {
 }
 .btn0 {
   margin-left: 4%;
-  margin-top: 1%;
   margin-right: 4%;
 }
 .btn1 {
-  margin-bottom: 4%;
-  margin-top: 4%;
+  margin-bottom: 2%;
+  margin-top: 2%;
   margin-left: 4%;
   margin-right: 4%;
 }
@@ -42,24 +47,34 @@ button {
   margin-right: 4%;
 }
 .btn3 {
-  margin: 4%;
+  margin-left: 4%;
+  margin-right: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 .btn4 {
   margin-left: 4%;
   margin-right: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 .btn5 {
-  margin-bottom: 4%;
-  margin-top: 4%;
   margin-left: 4%;
   margin-right: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 .btn6 {
   margin-left: 4%;
   margin-right: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 .btn7 {
-  margin: 4%;
+  margin-left: 4%;
+  margin-right: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 ​ .logouticon {
   color: aliceblue;
@@ -70,7 +85,6 @@ button {
   height: 100px;
   display: flex;
   margin-left: 35%;
-  margin-top: 5%;
 }
 .srs {
   width: fit-content;

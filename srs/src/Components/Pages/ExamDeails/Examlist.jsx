@@ -34,7 +34,7 @@ function ExamList() {
       console.error("Error deleting exam:", error);
     }
   };
-  
+
   return (
     <div>
       <h2>Exam Details</h2>

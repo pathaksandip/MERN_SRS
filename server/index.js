@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 const Examdetails = require("./Schema/Examdetails");
 const ExamResult = require("./Schema/ExamResults");
+
 // Enable CORS
 app.use(
   cors({
@@ -31,6 +32,12 @@ mongoose
     console.log("Connected to MongoDB");
   })
   .catch((err) => console.error("Failed to connect to MongoDB", err));
+
+// Start the server
+app.listen(4000, () => {
+  console.log("Server started on port 4000");
+});
+
 //adminschema
 const userSchema = new mongoose.Schema({
   username: String,
@@ -594,10 +601,8 @@ app.post("/obtainedmarks", async (req, res) => {
       return result;
     }, []);
 
-    // console.log("Mapped data:", mappedData);
 
     const savedData = await ExamResult.insertMany(mappedData);
-    // console.log("Saved data:", savedData);
 
     res.status(201).json({ message: "Obtained marks data saved successfully" });
   } catch (error) {
@@ -677,14 +682,125 @@ app.post("/result/obtained", async (req, res) => {
             ? "Passed"
             : "Failed";
 
-        console.log(`Remarks for ${student.name}: `, remarks);
-        console.log(`Grade points for ${student.name}: `, totalGradePoints);
 
         // Update the student object with total grade points and remarks
         const studentWithTotalGradePoints = {
           ...student.toObject(),
           totalGradePoints,
           remarks,
+        };
+
+        // Respond with the updated student object
+        res.status(200).json({ student: studentWithTotalGradePoints });
+      } else {
+        console.log("Student not found");
+        res.status(404).json({ error: "Student not found" });
+      }
+    } else {
+      console.log("Result not found");
+      res.status(404).json({ error: "Result not found" });
+    }
+  } catch (error) {
+    console.log("ERROR", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+app.post("/result/gradesheet", async (req, res) => {
+  try {
+    const { admissionID, selectedClass, selectedExam } = req.body;
+    const resultDoc = await ExamResult.findOne({
+      "students.admissionId": admissionID,
+      examType: selectedExam,
+      Studentclass: selectedClass,
+    });
+
+    if (resultDoc) {
+      const calculateSubjectGradePoints = (obtainedMarks, fullMarks) => {
+        const percentage = (obtainedMarks / fullMarks) * 100;
+
+        if (percentage >= 90) {
+          return 4.0;
+        } else if (percentage >= 80) {
+          return 3.6;
+        } else if (percentage >= 70) {
+          return 3.2;
+        } else if (percentage >= 60) {
+          return 2.8;
+        } else if (percentage >= 50) {
+          return 2.4;
+        } else if (percentage >= 40) {
+          return 2.0;
+        } else if (percentage >= 35) {
+          return 1.6;
+        } else {
+          return 0.0; // Default grade point for marks below 40% of full marks
+        }
+      };
+      const calculateGPAFromGradePoints = (gradePoints) => {
+        if (gradePoints >= 3.6) {
+          return "A+";
+        } else if (gradePoints >= 3.2) {
+          return "A";
+        } else if (gradePoints >= 2.8) {
+          return "B+";
+        } else if (gradePoints >= 2.4) {
+          return "B";
+        } else if (gradePoints >= 2.0) {
+          return "C+";
+        } else if (gradePoints >= 1.6) {
+          return "C";
+        } else if (gradePoints >= 1.2) {
+          return "D+";
+        } else {
+          return "NG";
+        }
+      };
+      const student = resultDoc.students.find(
+        (student) =>
+          parseInt(student.admissionId, 10) === parseInt(admissionID, 10)
+      );
+
+      if (student) {
+        const subjectsWithGradePoints = await Promise.all(
+          student.subjects.map(async (subject) => {
+            const gradePoints = calculateSubjectGradePoints(
+              subject.obtainedMarks,
+              subject.fullMarks
+            );
+            const subjectInfo = {
+              subjectName: subject.subject,
+              gradePoints,
+              grade: calculateGPAFromGradePoints(gradePoints),
+            };
+
+            return subjectInfo;
+          })
+        );
+
+        const totalGradePoints =
+          subjectsWithGradePoints.length > 0
+            ? (
+                subjectsWithGradePoints.reduce(
+                  (sum, { gradePoints }) => sum + gradePoints,
+                  0
+                ) / subjectsWithGradePoints.length
+              ).toFixed(2)
+            : 0;
+
+        const remarks =
+          student.subjects.every(
+            (subject) =>
+              parseInt(subject.obtainedMarks, 10) >= subject.passMarks
+          ) && totalGradePoints > 0
+            ? "Passed"
+            : "Failed";
+
+        // Update the student object with total grade points and remarks
+        const studentWithTotalGradePoints = {
+          ...student.toObject(),
+          totalGradePoints,
+          remarks,
+          subjects: subjectsWithGradePoints,
         };
 
         // Respond with the updated student object
@@ -719,13 +835,10 @@ app.get("/obtainedmarks", async (req, res) => {
 //checkwhether seleced exam exists or not for same class
 app.get("/api/check-exam-exist", async (req, res) => {
   const { Studentclass, examType } = req.query;
-  console.log("Exam Type:", examType);
-  console.log("Student Class:", Studentclass);
 
   try {
     // Assuming you have a Marks model (replace with your model name)
     const result = await ExamResult.findOne({ Studentclass, examType }).exec();
-    console.log("Result is", result);
     if (result === null) {
       // The selected exam does not exist for this class
       res.status(200).json({ examExists: false });
@@ -737,9 +850,4 @@ app.get("/api/check-exam-exist", async (req, res) => {
     console.error("Error during exam validation check", err);
     res.status(500).json({ error: "Internal server error" });
   }
-});
-
-// Start the server
-app.listen(4000, () => {
-  console.log("Server started on port 4000");
 });

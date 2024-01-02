@@ -148,48 +148,50 @@ function MarksDisplay() {
           <h5>Exam: {examName}</h5>
         </div>
       </div>
+      <div className="table-responsive">
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Student's Name</th>
+              <th>Roll No</th>
+              <th>Student ID</th>
 
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Student's Name</th>
-            <th>Roll No</th>
-            <th>Student ID</th>
-
-            {subjectNames.map((subjectName, index) => (
-              <th key={index}>
-                {subjectName}
-                <br />({SubjectMarks[index].fullMarks})
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((student, studentIndex) => (
-            <tr key={student._id}>
-              <td>{student.fname}</td>
-              <td>{student.roll}</td>
-              <td>{student.admissionID}</td>
-              {subjectNames.map((subject, subjectIndex) => (
-                <td key={subject._id}>
-                  <input
-                    type="number"
-                    value={obtainedMarks[studentIndex][subjectIndex]}
-                    onChange={(e) =>
-                      handleObtainedMarksChange(
-                        studentIndex,
-                        subjectIndex,
-                        e.target.value
-                      )
-                    }
-                    max={SubjectMarks[subjectIndex].fullMarks}
-                  />
-                </td>
+              {subjectNames.map((subjectName, index) => (
+                <th key={index}>
+                  {subjectName}
+                  <br />({SubjectMarks[index].fullMarks})
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {students.map((student, studentIndex) => (
+              <tr key={student._id}>
+                <td>{student.fname}</td>
+                <td>{student.roll}</td>
+                <td>{student.admissionID}</td>
+                {subjectNames.map((subject, subjectIndex) => (
+                  <td key={subject._id}>
+                    <input
+                      type="number"
+                      value={obtainedMarks[studentIndex][subjectIndex]}
+                      onChange={(e) =>
+                        handleObtainedMarksChange(
+                          studentIndex,
+                          subjectIndex,
+                          e.target.value
+                        )
+                      }
+                      max={SubjectMarks[subjectIndex].fullMarks}
+                      className="form-control form-control-sm border-dark"
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {submissionStatus === "success" && (
         <div style={{ color: "green", fontSize: "16px", marginBottom: "10px" }}>
           Submission successful!

@@ -144,8 +144,8 @@ function Result() {
       const logoHeight = 30;
 
       const GradeSheet = "/Images/gradesheet.png";
-      const GradeWidth = 130; // Set your desired logo width
-      const GradeHeight = 90;
+      const GradeWidth = 120; // Set your desired logo width
+      const GradeHeight = 80;
       // Create a new jsPDF instance
       const doc = new jsPDF();
       // Iterate over each student and add their details to the PDF
@@ -322,7 +322,7 @@ function Result() {
           GradeSheet,
           "PNG",
           6,
-          doc.autoTable.previous.finalY + 33,
+          doc.autoTable.previous.finalY + 28,
           GradeWidth,
           GradeHeight
         );
@@ -339,12 +339,12 @@ function Result() {
           155,
           doc.autoTable.previous.finalY + 33
         );
-        doc.text(`...........................`, 10, 270);
-        doc.text(`........................`, 97, 270);
-        doc.text(`........................`, 163, 270);
-        doc.text(`Class Teacher`, 12, 275);
-        doc.text(`Principal`, 102, 275);
-        doc.text(`Guardian`, 167, 275);
+        doc.text(`...........................`, 10, 280);
+        doc.text(`........................`, 97, 280);
+        doc.text(`........................`, 163, 280);
+        doc.text(`Class Teacher`, 12, 285);
+        doc.text(`Principal`, 102, 285);
+        doc.text(`Guardian`, 167, 285);
       }
 
       // Get the blob URL of the PDF
@@ -401,42 +401,61 @@ function Result() {
     }
   }
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     try {
       setPdfLoading(true);
 
-      // Check if the print window is already open
-      const printWindow = window.open("", "_blank");
-
-      // Write the content to the print window
-      printWindow.document.write(
-        `<html><head>
-          <style>
-            @media print {
+      // Get the HTML content for printing
+      const printableContent = `
+        <html>
+          <head>
+            <style>
               body { margin: 20px; }
               table { width: 100%; border-collapse: collapse; }
               th, td { border: 3px solid #ddd; padding: 8px; }
               h5 { margin-bottom: 50px; }
-              @page { size: landscape; margin: 20px; }
-            }
-          </style>
-        </head><body>`
-      );
-      printWindow.document.write(
-        `<h5>Class: ${selectedClassName} | Exam: ${selectedExamName}</h5>`
-      );
-      printWindow.document.write(ref.current.innerHTML);
-      printWindow.document.write("</body></html>");
+              @media print {
+                body { margin: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 3px solid #ddd; padding: 8px; }
+                h5 { margin-bottom: 50px; }
+                @page { size: landscape; margin: 20px; }
+              }
+            </style>
+          </head>
+          <body>
+            <h5>Class: ${selectedClassName} | Exam: ${selectedExamName}</h5>
+            ${ref.current.querySelector(".table").outerHTML}
+          </body>
+        </html>
+      `;
 
-      // Call print on the print window
-      printWindow.print();
-      printWindow.onafterprint = () => {
-        // Close the window after printing
-        printWindow.close();
-        setPdfLoading(false);
-      };
+      // Convert the HTML content to a Blob
+      const blob = new Blob([printableContent], { type: "text/html" });
+
+      // Create a blob URL for the printable content
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a temporary iframe
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      // Set the iframe source to the blob URL
+      iframe.src = blobUrl;
+
+      // Wait for a short delay to ensure the iframe has loaded
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Trigger the print functionality for the iframe
+      iframe.contentWindow.print();
+
+      // Remove the temporary iframe
+      document.body.removeChild(iframe);
+
+      setPdfLoading(false);
     } catch (error) {
-      console.error("Error opening print window:", error);
+      console.error("Error opening print dialog:", error);
       setPdfLoading(false);
     }
   };
@@ -522,7 +541,7 @@ function Result() {
         </div>
       </>
       <div
-        className="table-responsive"
+        className=" table-responsive"
         ref={ref}
         style={pdfLoading ? tableStyles : printStyles}
       >
