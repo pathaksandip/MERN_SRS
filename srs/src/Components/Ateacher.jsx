@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import "./Pages/Ateacher.css";
 import axios from "axios";
 import { Container, Table, Button, Modal, Form } from "react-bootstrap";
-
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 function Ateacher() {
   const [tName, setTName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordData, setShowPasswordData] = useState({});
   const [temail, setTEmail] = useState("");
   const [tphone, setTPhone] = useState("");
   const [taddress, settaddress] = useState("");
@@ -32,6 +34,40 @@ function Ateacher() {
     var day = date.getDate();
     return year + "/" + month + "/" + day;
   }
+
+  const isValidEmail = (email) => {
+    if (!email) {
+      return true;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidPassword = (password) => {
+    if (!password) {
+      return true;
+    }
+    const regexNumber = /\d/;
+    const regexCapitalLetter = /[A-Z]/;
+    const regexSymbol = /[!@#$%^&*(),.?":{}|<>]/;
+    return (
+      password.length >= 8 &&
+      regexNumber.test(password) &&
+      regexCapitalLetter.test(password) &&
+      regexSymbol.test(password)
+    );
+  };
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+  const togglePasswordVisibilityData = (teacherId) => {
+    setShowPasswordData((prevVisibility) => {
+      const newVisibility = { ...prevVisibility };
+      newVisibility[teacherId] = !newVisibility[teacherId];
+      return newVisibility;
+    });
+  };
+
   useEffect(() => {
     const getTeacherDetails = async () => {
       try {
@@ -208,10 +244,19 @@ function Ateacher() {
                   type="email"
                   value={temail}
                   onChange={(e) => setTEmail(e.target.value)}
-                  className="form-control"
+                  className={`form-control ${
+                    isValidEmail(temail) ? "" : "is-invalid"
+                  }`}
                   id="email"
                   placeholder="Enter email"
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                  title="Enter a valid email address"
                 />
+                {!isValidEmail(temail) && (
+                  <div className="invalid-feedback">
+                    Please enter a valid email address.
+                  </div>
+                )}
               </div>
 
               <div className="form-group phone1">
@@ -274,16 +319,30 @@ function Ateacher() {
                   placeholder="Enter username"
                 />
               </div>
-              <div className="form-group phone">
+              <div className="form-group password">
                 <label htmlFor="password">Password:</label>
-                <input
-                  type="text"
-                  value={tpassword}
-                  onChange={(e) => settpassword(e.target.value)}
-                  className="form-control"
-                  id="password"
-                  placeholder="Set password"
-                />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={tpassword}
+                    onChange={(e) => settpassword(e.target.value)}
+                    className={`form-control ${
+                      isValidPassword(tpassword) ? "" : "  is-invalid"
+                    }`}
+                    id="password"
+                    placeholder="Set password"
+                  />
+                  <span
+                    className="input-group-text"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                  </span>
+                </div>
+
+                {tpassword && !isValidPassword(tpassword) && (
+                  <div className="invalid-feedback">Invalid Format</div>
+                )}
               </div>
               <div className="form-group address1">
                 <label>Subject:</label>
@@ -322,7 +381,7 @@ function Ateacher() {
               <h1>Teacher User List</h1>
               <div className="table-responsive">
                 <Table striped responsive>
-                  <thead>
+                  <thead className="thead-fixed">
                     <tr>
                       <th>Name</th>
                       <th>Email</th>
@@ -338,7 +397,7 @@ function Ateacher() {
                   </thead>
                   <tbody>
                     {teacherList.map((teacher) => (
-                      <tr key={teacher._id}>
+                      <tr key={teacher._id} className="table-row">
                         <td>{teacher.tName}</td>
                         <td>{teacher.temail}</td>
                         <td>{teacher.tphone}</td>
@@ -347,9 +406,30 @@ function Ateacher() {
                         <td>{teacher.tusername}</td>
                         <td>{teacher.tsubject}</td>
                         <td>{DateConverter(teacher.tdob)}</td>
-                        <td>{teacher.tpassword}</td>
+                        <td className="d-flex ml-1">
+                          {showPasswordData[teacher._id]
+                            ? teacher.tpassword
+                            : "********"}
+                          <div>
+                            <span
+                              onClick={() =>
+                                togglePasswordVisibilityData(teacher._id)
+                              }
+                            >
+                              {showPasswordData[teacher._id] ? (
+                                <button className="btn btn-light">
+                                  <FaRegEye />
+                                </button>
+                              ) : (
+                                <button className="btn btn-light">
+                                  <FaRegEyeSlash />
+                                </button>
+                              )}
+                            </span>
+                          </div>
+                        </td>
                         <td>
-                          <div className="action-buttons">
+                          <div className="action-buttons d-flex ">
                             {editingTeacherId === teacher._id ? (
                               <>
                                 <Button
@@ -389,7 +469,6 @@ function Ateacher() {
                                   style={{
                                     backgroundColor: "red",
                                     color: "whitesmoke",
-                                    marginLeft: "2px",
                                   }}
                                   onClick={() => {
                                     if (

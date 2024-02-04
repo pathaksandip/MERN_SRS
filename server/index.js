@@ -14,6 +14,9 @@ app.use(express.json());
 const Examdetails = require("./Schema/Examdetails");
 const ExamResult = require("./Schema/ExamResults");
 
+const dotenv = require("dotenv");
+dotenv.config();
+const MONGODB_CONNECTION_STRING = process.env.MONGODB_CONNECTION_STRING;
 // Enable CORS
 app.use(
   cors({
@@ -24,15 +27,14 @@ app.use(
 
 // MongoDB connection
 mongoose
-  .connect(
-    "mongodb+srv://pathaksandip321:i73bswYVGQRxLQLz@cluster0.drpkplt.mongodb.net/test?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(MONGODB_CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("Connected to MongoDB");
   })
   .catch((err) => console.error("Failed to connect to MongoDB", err));
-
 // Start the server
 app.listen(4000, () => {
   console.log("Server started on port 4000");
@@ -601,7 +603,6 @@ app.post("/obtainedmarks", async (req, res) => {
       return result;
     }, []);
 
-
     const savedData = await ExamResult.insertMany(mappedData);
 
     res.status(201).json({ message: "Obtained marks data saved successfully" });
@@ -681,7 +682,6 @@ app.post("/result/obtained", async (req, res) => {
           ) && totalGradePoints > 0
             ? "Passed"
             : "Failed";
-
 
         // Update the student object with total grade points and remarks
         const studentWithTotalGradePoints = {
